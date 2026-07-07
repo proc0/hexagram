@@ -87,22 +87,22 @@ GameState Game::updateGame(State::App appState, InputEvent inputEvent){
     //     return;
     // }
 
-    if(state == State::Game::PLAY){
-        updateRaylibLogo();
+    // if(state == State::Game::PLAY){
+    //     updateRaylibLogo();
 
-        if (inputEvent.id == Event::Input::PRIMARY_UP && INTERSECTS(inputEvent.position, raylibLogoOuterRec)) {
-            TraceLog(LOG_INFO, "LOGO CLICK");
-            gameState.raylibLogoClicks++;
-        }
-    }
+    //     if (inputEvent.id == Event::Input::PRIMARY_UP && INTERSECTS(inputEvent.position, raylibLogoOuterRec)) {
+    //         TraceLog(LOG_INFO, "LOGO CLICK");
+    //         gameState.raylibLogoClicks++;
+    //     }
+    // }
 
-    if(state == State::Game::START){
-        // press any key screen (needed to load sound for web, as it needs user input to load audio)
-        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT) || GetKeyPressed() != 0){
-            state = State::Game::PLAY;
-        }
-        return gameState;
-    }
+    // if(state == State::Game::START){
+    //     // press any key screen (needed to load sound for web, as it needs user input to load audio)
+    //     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT) || GetKeyPressed() != 0){
+    //         state = State::Game::PLAY;
+    //     }
+    //     return gameState;
+    // }
 
     return gameState;
 }
@@ -122,7 +122,7 @@ void Game::renderMain() const {
 }
 
 void Game::renderGame() const {
-    renderRaylibLogo();
+    // renderRaylibLogo();
 }
 
 void Game::transition(State::Screen screen) {

@@ -2,12 +2,15 @@
 
 #include "window.hpp"
 #include "types.hpp"
+#include "grid.hpp"
 
 #include <raylib.h>
 
 class World : public Layer {
-    Sound splat;
     const Window& window;
+    Grid grid = Grid(window);
+
+    Sound splat;
 
 public:
     World(const Window& window): window(window) {};

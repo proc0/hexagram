@@ -1,6 +1,7 @@
 #include "world.hpp"
 
 #include "config.h"
+#include "raylib.h"
 // #include "defaults.hpp"
 
 #include <string>
@@ -21,7 +22,8 @@ void World::renderMain() const {
 }
 
 void World::renderGame() const {
-    DrawRectangleGradientH(0, 0, window.width, window.height, BLUE, ORANGE);
+    // DrawRectangleGradientH(0, 0, window.width, window.height, BLUE, ORANGE);
+    grid.renderGrid();
 }
 
 void World::updateUnit(){

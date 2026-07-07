@@ -127,7 +127,7 @@ void App::render(Clay_RenderCommandArray& renderCommands) const {
     EndTextureMode();
 
 	BeginDrawing();
-        ClearBackground(BLANK);
+        ClearBackground(GRAY);
         
         DrawTexturePro(target.texture, targetSource, targetDestination, Vector2({}), 0.0f, WHITE);
 
