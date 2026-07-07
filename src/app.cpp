@@ -132,6 +132,8 @@ void App::render(Clay_RenderCommandArray& renderCommands) const {
         DrawTexturePro(target.texture, targetSource, targetDestination, Vector2({}), 0.0f, WHITE);
 
         (surface.*surface.render)(renderCommands);
+
+        DrawFPS(50, 50);
 	EndDrawing();
 }
 

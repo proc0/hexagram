@@ -11,6 +11,8 @@ void World::load(){
     const char* pathSoundSplat = pathAssets.append("/").append(URI_SOUND_SPLAT).c_str();
 
     splat = LoadSound(pathSoundSplat);
+
+    grid.load();
 }
 
 void World::renderUnit() const {
@@ -36,6 +38,8 @@ void World::updateMain(){
 
 void World::updateGame(){
 
+    grid.updateGrid();
+    
     if(IsKeyPressed(KEY_SPACE)){
         PlaySound(splat);
     }
