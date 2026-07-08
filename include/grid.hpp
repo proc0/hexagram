@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <unordered_map>
+#include <array>
 
 // NOTE: in order to make this more flexible use <numbers> and std::numbers::sqrt2
 // consteval float sq3over2() { return std::sqrtf(3.0f) * 0.5f }
@@ -45,10 +46,36 @@ struct Layout {
     : orientation(orientation_), size(size_), origin(origin_) {}
 };
 
+enum SigilState {
+  IDLE,
+  MOVING,
+  MOVED
+};
+
+enum HexEdgeType {
+  OTHER,
+  TOP_RIGHT,
+  RIGHT,
+  BOTTOM_RIGHT,
+  BOTTOM_LEFT,
+  LEFT,
+  TOP_LEFT
+};
+
+struct Sigil {
+  Vector2 position;
+  Vector2 projection;
+  int value = 0;
+  SigilState state = SigilState::IDLE;
+  float percentMoved = 0.0f;
+};
+
 typedef struct Hex {
 	Vector2 position;
 	Vector2 projection;
-	bool isClicked;
+	bool isEdge;
+  HexEdgeType edgeType;
+  int sigilIndex;  
 } Hex;
 
 template <> struct std::hash<Vector2> {
@@ -61,14 +88,52 @@ template <> struct std::hash<Vector2> {
 };
 
 class Grid : public Layer {
-	std::vector<std::vector<Hex>> hexesArray = {};
+	// std::vector<std::vector<Hex>> hexesArray = {};
   std::unordered_map<Vector2, Hex> hexMap = {};
-
+  std::vector<Sigil> sigils = {};
+  std::array<Vector2, 4> topRightEdgeHexes = { 
+    Vector2({ 0.0f, -3.0f }),
+    Vector2({ 1.0f, -3.0f }),
+    Vector2({ 2.0f, -3.0f }),
+    Vector2({ 3.0f, -3.0f }),
+  };
+  std::array<Vector2, 4> rightEdgeHexes = { 
+    Vector2({ 3.0f, -3.0f }),
+    Vector2({ 3.0f, -2.0f }),
+    Vector2({ 3.0f, -1.0f }),
+    Vector2({ 3.0f, 0.0f }),
+  };
+  std::array<Vector2, 4> bottomRightEdgeHexes = { 
+    Vector2({ 3.0f, 0.0f }),
+    Vector2({ 2.0f, 1.0f }),
+    Vector2({ 1.0f, 2.0f }),
+    Vector2({ 0.0f, 3.0f }),
+  };
+  std::array<Vector2, 4> bottomLeftEdgeHexes = { 
+    Vector2({ 0.0f, 3.0f }),
+    Vector2({ -1.0f, -3.0f }),
+    Vector2({ -2.0f, 3.0f }),
+    Vector2({ -3.0f, 3.0f }),
+  };
+  std::array<Vector2, 4> leftEdgeHexes = { 
+    Vector2({ -3.0f, 3.0f }),
+    Vector2({ -3.0f, 2.0f }),
+    Vector2({ -3.0f, 1.0f }),
+    Vector2({ -3.0f, 0.0f }),
+  };
+  std::array<Vector2, 4> topLeftEdgeHexes = { 
+    Vector2({ -3.0f, 0.0f }),
+    Vector2({ -2.0f, -1.0f }),
+    Vector2({ -1.0f, -2.0f }),
+    Vector2({ 0.0f, -3.0f }),
+  };
   const Window& window;
 	Layout layout = Layout(layout_flat, Vector2({ 60.0f, 60.0f }), Vector2({ window.halfWidthf, window.halfHeightf }));
 
 
-    float radius = 60.0f;
+  float radius = 60.0f;
+
+  SigilState sigilState = SigilState::IDLE;
 
 public:
     Grid(const Window& window): window(window) {};
@@ -76,20 +141,21 @@ public:
 
     void load();
     
-    void generateArray(int layers);
+    // void generateArray(int layers);
     void generateMap(int layers);
 
     void renderGrid() const;
-    void drawHex(Vector2 position, bool isClicked) const;
+    void drawHex(const Hex& hex) const;
+    void drawSigil(const Sigil& sigil) const;
 
+    HexEdgeType getHexEdgeType(Vector2 axial);
     void updateGrid();
-    
     // axial to screen
     Vector2 project(Vector2 axial);
     // screen to axial
     Vector2 inject(Vector2 position);
     Vector2 roundHex(Vector2 v);
-    
+
     void resize(int width, int height) override;
     // void transition(State::Screen);
     // void unload();

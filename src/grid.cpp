@@ -3,7 +3,7 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <stdexcept>
+// #include <stdexcept>
 
 void Grid::load() {
 	// float originX = window.halfWidthf;
@@ -42,37 +42,42 @@ void Grid::load() {
 	// hexes.emplace_back(Vector2({ 1.0f, 0.0f }), project(Vector2({ 1.0f, 0.0f })), false);
 	// hexes.emplace_back(Vector2({ 0.0f, 1.0f }), project(Vector2({ 0.0f, 1.0f })), false);
 
+	sigils.reserve(1 + 6*sumCount(layers));
+	sigils.emplace_back(Vector2({ 0.0f, 0.0f }), Vector2({ 0.0f, 0.0f }), 0);
+	sigils.emplace_back(Vector2({ 3.0f, -1.0f }), project({ 3.0f, -1.0f }), 2);
+	sigils.emplace_back(Vector2({ 3.0f, 0.0f }), project({ 3.0f, 0.0f }), 4);
 }
 
 void Grid::generateMap(int layers) {
 	for (int q = -layers; q <= layers; q++) {
 	    int r1 = fmax(-layers, -q - layers);
 	    int r2 = fmin( layers, -q + layers);
-
+	    bool isColEdge = q == -layers || q == layers;
 	    for (int r = r1; r <= r2; r++) {
 	    	Vector2 axial = Vector2({ static_cast<float>(q), static_cast<float>(r) });
-	    	TraceLog(LOG_INFO, "generating map at (%d, %d)", q, r);
-			hexMap[axial] = { axial, project(axial), false };
+	    	// TraceLog(LOG_INFO, "generating map at (%d, %d)", q, r);
+	    	bool isRowEdge = r == r1 || r == r2;
+			hexMap[axial] = { axial, project(axial), isColEdge || isRowEdge, getHexEdgeType(axial), 0 };
 	    }
 	}
 }
 
-void Grid::generateArray(int layers) {
-	for (int q = -layers; q <= layers; q++) {
-	    int r1 = fmax(-layers, -q - layers);
-	    int r2 = fmin( layers, -q + layers);
+// void Grid::generateArray(int layers) {
+// 	for (int q = -layers; q <= layers; q++) {
+// 	    int r1 = fmax(-layers, -q - layers);
+// 	    int r2 = fmin( layers, -q + layers);
 
-	    int ri = q + layers;
-	    hexesArray.push_back({});
-    	hexesArray.at(ri).reserve(r2 - r1 + 1);
+// 	    int ri = q + layers;
+// 	    hexesArray.push_back({});
+//     	hexesArray.at(ri).reserve(r2 - r1 + 1);
 	    
-	    for (int r = r1; r <= r2; r++) {
-	    	TraceLog(LOG_INFO, "HEX: %d: %d, %d", ri, q, r);
-	    	Vector2 axial = Vector2({ static_cast<float>(q), static_cast<float>(r) });
-			hexesArray.at(ri).emplace_back(axial, project(axial), false);
-	    }
-	}
-}
+// 	    for (int r = r1; r <= r2; r++) {
+// 	    	TraceLog(LOG_INFO, "HEX: %d: %d, %d", ri, q, r);
+// 	    	Vector2 axial = Vector2({ static_cast<float>(q), static_cast<float>(r) });
+// 			hexesArray.at(ri).emplace_back(axial, project(axial), false);
+// 	    }
+// 	}
+// }
 
 void Grid::renderGrid() const {
 
@@ -85,7 +90,11 @@ void Grid::renderGrid() const {
 
 	//render hexMap
 	for (auto& [axial, hex] : hexMap) {
-		drawHex(hex.projection, hex.isClicked);
+		drawHex(hex);
+	}
+
+	for (const Sigil& sigil : sigils) {
+		drawSigil(sigil);
 	}
 
 	// float originX = window.halfWidthf;
@@ -112,20 +121,60 @@ void Grid::renderGrid() const {
 }
 
 void Grid::updateGrid() {
-	Vector2 mousePos = GetMousePosition();
-	Vector2 hexAxial = inject(mousePos);
 
-	// TraceLog(LOG_INFO, "hexAxial: %f %f", hexAxial.x, hexAxial.y);
-	try {
+	if (IsKeyPressed(KEY_W)) {
+		TraceLog(LOG_INFO, "MOVE UP");
+		if(sigilState == SigilState::IDLE) {
+			sigilState = SigilState::MOVING;
+			int safeguard = 1000;
+			//TODO: sort by position.y to start moving the top ones
+			for (int i = 1; i < sigils.size(); i++) {
+				Sigil& sigil = sigils[i];
+				sigil.state = SigilState::MOVING;
+				TraceLog(LOG_INFO, "SIGIL POSITION: %f %f", sigil.position.x, sigil.position.y);
+				Hex& currentHex = hexMap.at(sigil.position);
+				TraceLog(LOG_INFO, "Current Hex Edge Type: %i", currentHex.edgeType);
+				if (currentHex.edgeType != HexEdgeType::TOP_RIGHT && currentHex.edgeType != HexEdgeType::TOP_LEFT) {
+					Vector2 nextAxial = { sigil.position.x, sigil.position.y - 1.0f };
+					Hex& nextHex = hexMap.at(nextAxial);
+					Hex& prevHex = nextHex;
+					TraceLog(LOG_INFO, "Next Hex Edge Type: %i", nextHex.edgeType);
+					
+					while (safeguard > 0 && nextHex.edgeType != HexEdgeType::TOP_RIGHT && nextHex.edgeType != HexEdgeType::TOP_LEFT) {
+						prevHex = nextHex;
+						nextAxial = { sigil.position.x, nextAxial.y - 1 };
+						nextHex = hexMap.at(nextAxial);
+						if (nextHex.sigilIndex != 0) {
+							nextHex = prevHex;
+							break;
+						}
+						safeguard--;
+					}
 
-		if (hexAxial.x >= -3.0f && hexAxial.y >= -3.0f && hexAxial.x <= 3.0f && hexAxial.y <= 3.0f) {		
-			if (!hexMap.at(hexAxial).isClicked) {
-				hexMap.at(hexAxial).isClicked = true;
+					if (nextHex.sigilIndex == 0) {
+						sigil.position = nextHex.position;
+						sigil.projection = nextHex.projection;
+						nextHex.sigilIndex = i;
+					}
+				}
 			}
 		}
-	} catch(std::out_of_range error) {
-		TraceLog(LOG_INFO, "hexAxial: %f %f", hexAxial.x, hexAxial.y);
 	}
+	// Vector2 mousePos = GetMousePosition();
+	// Vector2 hexAxial = inject(mousePos);
+
+	// TraceLog(LOG_INFO, "hexAxial: %f %f", hexAxial.x, hexAxial.y);
+	// try {
+
+	// 	if (hexAxial.x >= -3.0f && hexAxial.y >= -3.0f && hexAxial.x <= 3.0f && hexAxial.y <= 3.0f) {		
+	// 		if (!hexMap.at(hexAxial).isClicked) {
+	// 			hexMap.at(hexAxial).isClicked = true;
+	// 		}
+	// 	}
+	// } catch(std::out_of_range error) {
+	// 	TraceLog(LOG_INFO, "hexAxial: %f %f", hexAxial.x, hexAxial.y);
+	// }
+
 	// int hexCol = hexAxial.x + 3;
 	// int hexRow = hexCol > 3 ? hexAxial.y + hexCol - hexAxial.x : hexAxial.y + hexCol;
 
@@ -153,9 +202,66 @@ void Grid::updateGrid() {
 	// }
 }
 
-void Grid::drawHex(Vector2 position, bool isClicked) const {
-    DrawPoly(position, 6, radius, 0.0f, isClicked ? YELLOW : BEIGE);
-    DrawPolyLines(position, 6, radius, 0.0f, BLACK);
+void Grid::drawHex(const Hex& hex) const {
+    DrawPoly(hex.projection, 6, radius, 0.0f, hex.isEdge ? YELLOW : BEIGE);
+    DrawPolyLines(hex.projection, 6, radius, 0.0f, BLACK);
+    const char* sigilValue = TextFormat("(%d, %d)", static_cast<int>(hex.position.x), static_cast<int>(hex.position.y));
+    DrawText(sigilValue, hex.projection.x-30.0f, hex.projection.y, 20, BLACK);
+}
+
+void Grid::drawSigil(const Sigil& sigil) const {
+    DrawPoly(sigil.projection, 6, radius, 0.0f, PURPLE);
+    DrawPolyLines(sigil.projection, 6, radius, 0.0f, BLACK);
+    const char* sigilValue = TextFormat("%d", sigil.value);
+    DrawText(sigilValue, sigil.projection.x, sigil.projection.y, 20, BLACK);
+}
+
+HexEdgeType Grid::getHexEdgeType(Vector2 axial) {
+	HexEdgeType edgeType = HexEdgeType::OTHER;
+
+	for (Vector2& v : topRightEdgeHexes) {
+		if (v.x == axial.x && v.y == axial.y) {
+			edgeType = HexEdgeType::TOP_RIGHT;
+			return edgeType;
+		}
+	}
+
+	for (Vector2& v : rightEdgeHexes) {
+		if (v.x == axial.x && v.y == axial.y) {
+			edgeType = HexEdgeType::RIGHT;
+			return edgeType;
+		}
+	}
+
+	for (Vector2& v : bottomRightEdgeHexes) {
+		if (v.x == axial.x && v.y == axial.y) {
+			edgeType = HexEdgeType::BOTTOM_RIGHT;
+			return edgeType;
+		}
+	}
+
+	for (Vector2& v : bottomLeftEdgeHexes) {
+		if (v.x == axial.x && v.y == axial.y) {
+			edgeType = HexEdgeType::BOTTOM_LEFT;
+			return edgeType;
+		}
+	}
+
+	for (Vector2& v : leftEdgeHexes) {
+		if (v.x == axial.x && v.y == axial.y) {
+			edgeType = HexEdgeType::LEFT;
+			return edgeType;
+		}
+	}
+
+	for (Vector2& v : topLeftEdgeHexes) {
+		if (v.x == axial.x && v.y == axial.y) {
+			edgeType = HexEdgeType::TOP_LEFT;
+			return edgeType;
+		}
+	}
+
+	return edgeType;
 }
 
 Vector2 Grid::roundHex(Vector2 v) {

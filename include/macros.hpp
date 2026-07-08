@@ -4,6 +4,8 @@
 
 #define ROUND4(num) (round((num) * 10000.0f)/10000.0f)
 
+#define INVERSE_EXPONENTIAL(x) ((x) >= 1 ? 1 : 1 - pow(2, -10 * (x)))
+
 static inline int factorial(int n) {
     if (n < 0) return 0;
     
