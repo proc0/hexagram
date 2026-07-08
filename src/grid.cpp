@@ -128,57 +128,65 @@ void Grid::updateGrid() {
 		TraceLog(LOG_INFO, "MOVE UP");
 		if(sigilState == SigilState::IDLE) {
 			sigilState = SigilState::MOVING;
+			// TODO: remove this once its safe
 			int safeguard = 1000;
-			//TODO: sort by position.y to start moving the top ones
-			//TODO: store possible movements in sigil
-			// start moving only the sigils that have the relevant direction available
-			// recalculate after those initial sigils have moved until all sigils have no more of that direction available
-			// mark the sigils as processed
 
-			//TODO: look at the sigil neighbors to determine who to move,
+			// look at the sigil neighbors to determine who to move,
 			// then look at the opposite direction to check if there was a sigil 
 			// and move that, repeating until there are no more sigil neighbors
 			for (int i = 1; i < sigils.size(); i++) {
 
-
 				Sigil& sigil = sigils[i];
 				sigil.state = SigilState::MOVING;
-				TraceLog(LOG_INFO, "SIGIL POSITION: %f %f", sigil.position.x, sigil.position.y);
+				// TraceLog(LOG_INFO, "SIGIL POSITION: %f %f", sigil.position.x, sigil.position.y);
 				Hex& currentHex = hexMap.at(sigil.position);
 
-				TraceLog(LOG_INFO, "Current Hex Edge Type: %i", currentHex.edgeType);
+				// TraceLog(LOG_INFO, "Current Hex Edge Type: %i", currentHex.edgeType);
+
+				// if the current hex location of the sigil isn't one of the edges in the direction pressed
+				// then walk hex by hex in that direction checking if the hex is clear for movement
+				// do this until another hex with a sigil is reached or an edge is reached
 				if (currentHex.edgeType != HexEdgeType::TOP_RIGHT && currentHex.edgeType != HexEdgeType::TOP_LEFT) {
+					// next hex position, one hex in the direction of the current sigil
+					// TODO: abstract this to move in any direction
 					Vector2 nextAxial = { sigil.position.x, sigil.position.y - 1.0f };
+
 					//get neighbor sigil in the direction of the move, and if it's blocked, skip
 					Hex& nextHex = hexMap.at(nextAxial);
 					if (nextHex.sigilIndex != 0) {
+						// the next hex has a sigil, so this sigil cannot move
+						// it will be pulled in the chain if the sigil on top can move
 						continue;
 					}
-					// Hex& prevHex = nextHex;
-					TraceLog(LOG_INFO, "Next Hex Edge Type: %i", nextHex.edgeType);
+
+					// TraceLog(LOG_INFO, "Next Hex Edge Type: %i", nextHex.edgeType);
+					// continue to iterate if the next hex has no sigil, and it is not an edge in the direction moved
+					// TODO: abstract this for any direction
 					bool continueMove = nextHex.sigilIndex == 0 && nextHex.edgeType != HexEdgeType::TOP_RIGHT && nextHex.edgeType != HexEdgeType::TOP_LEFT;
 
+					// iterate over the nextAxial coordinate until a stopping point
 					while (safeguard > 0 && continueMove) {
-						// prevHex = nextHex;
+						// update next axial coordinate in the direction of movement
+						// TODO: abstract this for any direction
 						nextAxial = { sigil.position.x, nextAxial.y - 1 };
 						Hex& searchHex = hexMap.at(nextAxial);
+						// TODO: abstract this for any direction
 						continueMove = searchHex.sigilIndex == 0 && searchHex.edgeType != HexEdgeType::TOP_RIGHT && searchHex.edgeType != HexEdgeType::TOP_LEFT;
-						// if (nextHex.sigilIndex != 0) {
-						// 	nextHex = prevHex;
-						// 	break;
-						// }
+
 						safeguard--;
 					}
 
+					// when iteration stops, the nextAxial will be the destination axial
+					// get the destination hex from the destination axial
 					Hex& destHex = hexMap.at(nextAxial);
 
 					// process any neighbor sigils that are in the opposite direction of the move
-					// moving them one down or merging them
+					// moving them one down or merging them, first check the opposite direction is not an edge (relative to the opposite direction)
 					if (currentHex.edgeType != HexEdgeType::BOTTOM_RIGHT && currentHex.edgeType != HexEdgeType::BOTTOM_LEFT) {
 						Vector2 prevAxial = { sigil.position.x, sigil.position.y + 1.0f };
 						//get neighbor sigil in the direction of the move, and if it's blocked, skip
 						Hex& prevHex = hexMap.at(prevAxial);
-						
+
 						if (prevHex.sigilIndex > 0) {
 							Sigil& prevSigil = sigils.at(prevHex.sigilIndex);
 							prevSigil.position = { destHex.position.x, destHex.position.y + 1.0f };
@@ -258,43 +266,43 @@ void Grid::drawSigil(const Sigil& sigil) const {
 
 HexEdgeType Grid::getHexEdgeType(Vector2 axial) {
 	HexEdgeType edgeType = HexEdgeType::OTHER;
-
-	for (Vector2& v : topRightEdgeHexes) {
+	// TODO: abstract over direction
+	for (const Vector2& v : topRightEdgeHexes) {
 		if (v.x == axial.x && v.y == axial.y) {
 			edgeType = HexEdgeType::TOP_RIGHT;
 			return edgeType;
 		}
 	}
 
-	for (Vector2& v : rightEdgeHexes) {
+	for (const Vector2& v : rightEdgeHexes) {
 		if (v.x == axial.x && v.y == axial.y) {
 			edgeType = HexEdgeType::RIGHT;
 			return edgeType;
 		}
 	}
 
-	for (Vector2& v : bottomRightEdgeHexes) {
+	for (const Vector2& v : bottomRightEdgeHexes) {
 		if (v.x == axial.x && v.y == axial.y) {
 			edgeType = HexEdgeType::BOTTOM_RIGHT;
 			return edgeType;
 		}
 	}
 
-	for (Vector2& v : bottomLeftEdgeHexes) {
+	for (const Vector2& v : bottomLeftEdgeHexes) {
 		if (v.x == axial.x && v.y == axial.y) {
 			edgeType = HexEdgeType::BOTTOM_LEFT;
 			return edgeType;
 		}
 	}
 
-	for (Vector2& v : leftEdgeHexes) {
+	for (const Vector2& v : leftEdgeHexes) {
 		if (v.x == axial.x && v.y == axial.y) {
 			edgeType = HexEdgeType::LEFT;
 			return edgeType;
 		}
 	}
 
-	for (Vector2& v : topLeftEdgeHexes) {
+	for (const Vector2& v : topLeftEdgeHexes) {
 		if (v.x == axial.x && v.y == axial.y) {
 			edgeType = HexEdgeType::TOP_LEFT;
 			return edgeType;

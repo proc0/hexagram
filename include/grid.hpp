@@ -108,36 +108,37 @@ class Grid : public Layer {
     Vector2({ 2.0f, -3.0f }),
     Vector2({ 3.0f, -3.0f }),
   };
-  std::array<Vector2, 4> rightEdgeHexes = { 
+  const std::array<Vector2, 4> rightEdgeHexes = { 
     Vector2({ 3.0f, -3.0f }),
     Vector2({ 3.0f, -2.0f }),
     Vector2({ 3.0f, -1.0f }),
     Vector2({ 3.0f, 0.0f }),
   };
-  std::array<Vector2, 4> bottomRightEdgeHexes = { 
+  const std::array<Vector2, 4> bottomRightEdgeHexes = { 
     Vector2({ 3.0f, 0.0f }),
     Vector2({ 2.0f, 1.0f }),
     Vector2({ 1.0f, 2.0f }),
     Vector2({ 0.0f, 3.0f }),
   };
-  std::array<Vector2, 4> bottomLeftEdgeHexes = { 
+  const std::array<Vector2, 4> bottomLeftEdgeHexes = { 
     Vector2({ 0.0f, 3.0f }),
     Vector2({ -1.0f, -3.0f }),
     Vector2({ -2.0f, 3.0f }),
     Vector2({ -3.0f, 3.0f }),
   };
-  std::array<Vector2, 4> leftEdgeHexes = { 
+  const std::array<Vector2, 4> leftEdgeHexes = { 
     Vector2({ -3.0f, 3.0f }),
     Vector2({ -3.0f, 2.0f }),
     Vector2({ -3.0f, 1.0f }),
     Vector2({ -3.0f, 0.0f }),
   };
-  std::array<Vector2, 4> topLeftEdgeHexes = { 
+  const std::array<Vector2, 4> topLeftEdgeHexes = { 
     Vector2({ -3.0f, 0.0f }),
     Vector2({ -2.0f, -1.0f }),
     Vector2({ -1.0f, -2.0f }),
     Vector2({ 0.0f, -3.0f }),
   };
+  
   const Window& window;
 	Layout layout = Layout(layout_flat, Vector2({ 60.0f, 60.0f }), Vector2({ window.halfWidthf, window.halfHeightf }));
 
