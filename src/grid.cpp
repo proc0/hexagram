@@ -1,8 +1,9 @@
 #include "grid.hpp"
-#include "macros.hpp"
+// #include "macros.hpp"
 
 #include <raylib.h>
 #include <raymath.h>
+#include <stdexcept>
 
 void Grid::load() {
 	// float originX = window.halfWidthf;
@@ -15,8 +16,10 @@ void Grid::load() {
 	// number of onion layers on the center hex
 	int layers = 3;
 	// total number of hexes
-	hexes.reserve(1 + 6*sumCount(layers));
-	generate(layers);
+	// hexes.reserve(1 + 6*sumCount(layers));
+	// hexes.reserve(2*layers + 1);
+	
+	generateMap(layers);
 
 	// hexes.emplace_back(Vector2({ 0.0f, 0.0f }), origin, false);
 	// // drawHex(Vector2Add(hexPos, origin));
@@ -41,22 +44,50 @@ void Grid::load() {
 
 }
 
-void Grid::generate(int layers) {
+void Grid::generateMap(int layers) {
 	for (int q = -layers; q <= layers; q++) {
 	    int r1 = fmax(-layers, -q - layers);
 	    int r2 = fmin( layers, -q + layers);
+
 	    for (int r = r1; r <= r2; r++) {
 	    	Vector2 axial = Vector2({ static_cast<float>(q), static_cast<float>(r) });
-			hexes.emplace_back(axial, project(axial), false);
+	    	TraceLog(LOG_INFO, "generating map at (%d, %d)", q, r);
+			hexMap[axial] = { axial, project(axial), false };
+	    }
+	}
+}
+
+void Grid::generateArray(int layers) {
+	for (int q = -layers; q <= layers; q++) {
+	    int r1 = fmax(-layers, -q - layers);
+	    int r2 = fmin( layers, -q + layers);
+
+	    int ri = q + layers;
+	    hexesArray.push_back({});
+    	hexesArray.at(ri).reserve(r2 - r1 + 1);
+	    
+	    for (int r = r1; r <= r2; r++) {
+	    	TraceLog(LOG_INFO, "HEX: %d: %d, %d", ri, q, r);
+	    	Vector2 axial = Vector2({ static_cast<float>(q), static_cast<float>(r) });
+			hexesArray.at(ri).emplace_back(axial, project(axial), false);
 	    }
 	}
 }
 
 void Grid::renderGrid() const {
 
-	for (const Hex& hex : hexes) {
+	// render hexArray
+	// for (auto& hexRow : hexes) {
+	// 	for (const Hex& hex : hexRow) {
+	// 		drawHex(hex.projection, hex.isClicked);
+	// 	}
+	// }
+
+	//render hexMap
+	for (auto& [axial, hex] : hexMap) {
 		drawHex(hex.projection, hex.isClicked);
 	}
+
 	// float originX = window.halfWidthf;
 	// float originY = window.halfHeightf;
 	// Vector2 origin = Vector2({ originX, originY });
@@ -81,18 +112,83 @@ void Grid::renderGrid() const {
 }
 
 void Grid::updateGrid() {
-	for (Hex& hex : hexes) {
-		if (CheckCollisionPointCircle(GetMousePosition(), hex.projection, radius)) {
-			hex.isClicked = true;
-		} else {
-			hex.isClicked = false;
+	Vector2 mousePos = GetMousePosition();
+	Vector2 hexAxial = inject(mousePos);
+
+	// TraceLog(LOG_INFO, "hexAxial: %f %f", hexAxial.x, hexAxial.y);
+	try {
+
+		if (hexAxial.x >= -3.0f && hexAxial.y >= -3.0f && hexAxial.x <= 3.0f && hexAxial.y <= 3.0f) {		
+			if (!hexMap.at(hexAxial).isClicked) {
+				hexMap.at(hexAxial).isClicked = true;
+			}
 		}
+	} catch(std::out_of_range error) {
+		TraceLog(LOG_INFO, "hexAxial: %f %f", hexAxial.x, hexAxial.y);
 	}
+	// int hexCol = hexAxial.x + 3;
+	// int hexRow = hexCol > 3 ? hexAxial.y + hexCol - hexAxial.x : hexAxial.y + hexCol;
+
+	// if (!hexes.at(hexCol).empty()) {
+	// 	if(!hexes.at(hexCol).at(hexRow).isClicked) {
+	// 		TraceLog(LOG_INFO, "MOUSE POS: %f %f \n HEX: %d %d", mousePos.x, mousePos.y, hexCol, hexRow);
+	// 		hexes.at(hexCol).at(hexRow).isClicked = true;
+	// 	}
+	// 	// for (Hex& hex : hexes.at(hexRow)) {
+	// 	// 	if (!hex.isClicked) {
+	// 	// 		TraceLog(LOG_INFO, "MOUSE POS: %f %f \n HEX ROW: %d", mousePos.x, mousePos.y, hexRow);
+	// 	// 		hex.isClicked = true;
+	// 	// 	}
+	// 	// }
+
+	// }
+	// for (auto& hexRow : hexes) {
+	// 	for (Hex& hex : hexRow) {
+	// 		if (CheckCollisionPointCircle(GetMousePosition(), hex.projection, radius)) {
+	// 			hex.isClicked = true;
+	// 		} else {
+	// 			hex.isClicked = false;
+	// 		}
+	// 	}
+	// }
 }
 
 void Grid::drawHex(Vector2 position, bool isClicked) const {
     DrawPoly(position, 6, radius, 0.0f, isClicked ? YELLOW : BEIGE);
     DrawPolyLines(position, 6, radius, 0.0f, BLACK);
+}
+
+Vector2 Grid::roundHex(Vector2 v) {
+// Hex hex_round(FractionalHex h) {
+//     int q = int(round(h.q));
+//     int r = int(round(h.r));
+//     int s = int(round(h.s));
+//     double q_diff = abs(q - h.q);
+//     double r_diff = abs(r - h.r);
+//     double s_diff = abs(s - h.s);
+//     if (q_diff > r_diff and q_diff > s_diff) {
+//         q = -r - s;
+//     } else if (r_diff > s_diff) {
+//         r = -q - s;
+//     } else {
+//         s = -q - r;
+//     }
+//     return Hex(q, r, s);
+// }
+    float q = roundf(v.x);
+    float r = roundf(v.y);
+    // int s = int(round(h.s));
+    // double q_diff = abs(q - v.x);
+    // double r_diff = abs(r - v.y);
+    // double s_diff = abs(s - h.s);
+    // if (q_diff > r_diff and q_diff > s_diff) {
+    //     q = -r - s;
+    // } else if (r_diff > s_diff) {
+    //     r = -q - s;
+    // } else {
+    //     s = -q - r;
+    // }
+    return Vector2({ q, r });
 }
 
 Vector2 Grid::inject(Vector2 position) {
@@ -104,7 +200,13 @@ Vector2 Grid::inject(Vector2 position) {
 //     double r = M.b2 * pt.x + M.b3 * pt.y;
 //     return FractionalHex(q, r, -q - r);
 // }
-	return {};
+    const Orientation& M = layout.orientation;
+    Vector2 pt = Vector2((position.x - layout.origin.x) / layout.size.x, 
+                     (position.y - layout.origin.y) / layout.size.y);
+    float q = M.b0 * pt.x + M.b1 * pt.y;
+    float r = M.b2 * pt.x + M.b3 * pt.y;
+
+	return roundHex({ q, r });
 }
 
 Vector2 Grid::project(Vector2 axial) {

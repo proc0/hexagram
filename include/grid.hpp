@@ -5,6 +5,9 @@
 
 #include <raylib.h>
 
+#include <cstddef>
+#include <unordered_map>
+
 // NOTE: in order to make this more flexible use <numbers> and std::numbers::sqrt2
 // consteval float sq3over2() { return std::sqrtf(3.0f) * 0.5f }
 constexpr float SQRT3_OVER_2 = 0.86602540378f; 
@@ -26,12 +29,12 @@ struct Orientation {
 };
 
 const Orientation layout_pointy
-  = Orientation(sqrtf(3.0f), sqrtf(3.0f) / 2.0f, 0.0f, 3.0f / 2.0f,
-                sqrtf(3.0f) / 3.0f, -1.0f / 3.0f, 0.0, 2.0f / 3.0f,
+  = Orientation(sqrtf(3.0f), sqrtf(3.0f)/2.0f, 0.0f, 3.0f/2.0f,
+                sqrtf(3.0f)/3.0f, -1.0f/3.0f, 0.0, 2.0f/3.0f,
                 0.5f);
 const Orientation layout_flat
-  = Orientation(3.0f / 2.0f, 0.0f, sqrtf(3.0f) / 2.0f, sqrtf(3.0f),
-                2.0f / 3.0f, 0.0f, -1.0f / 3.0f, sqrtf(3.0f) / 3.0f,
+  = Orientation(3.0f/2.0f, 0.0f, sqrtf(3.0f)/2.0f, sqrtf(3.0f),
+                2.0f/3.0f, 0.0f, -1.0f/3.0f, sqrtf(3.0f)/3.0f,
                 0.0f);
 
 struct Layout {
@@ -48,9 +51,20 @@ typedef struct Hex {
 	bool isClicked;
 } Hex;
 
+template <> struct std::hash<Vector2> {
+    size_t operator()(const Vector2& v) const {
+        hash<int> int_hash;
+        size_t vx = int_hash(v.x);
+        size_t vy = int_hash(v.y);
+        return vx ^ (vy + 0x9e3779b9 + (vx << 6) + (vx >> 2));
+    }
+};
+
 class Grid : public Layer {
-	std::vector<Hex> hexes = {};
-    const Window& window;
+	std::vector<std::vector<Hex>> hexesArray = {};
+  std::unordered_map<Vector2, Hex> hexMap = {};
+
+  const Window& window;
 	Layout layout = Layout(layout_flat, Vector2({ 60.0f, 60.0f }), Vector2({ window.halfWidthf, window.halfHeightf }));
 
 
@@ -62,7 +76,8 @@ public:
 
     void load();
     
-    void generate(int layers);
+    void generateArray(int layers);
+    void generateMap(int layers);
 
     void renderGrid() const;
     void drawHex(Vector2 position, bool isClicked) const;
@@ -73,7 +88,8 @@ public:
     Vector2 project(Vector2 axial);
     // screen to axial
     Vector2 inject(Vector2 position);
-
+    Vector2 roundHex(Vector2 v);
+    
     void resize(int width, int height) override;
     // void transition(State::Screen);
     // void unload();
