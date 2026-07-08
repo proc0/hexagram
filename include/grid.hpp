@@ -62,12 +62,23 @@ enum HexEdgeType {
   TOP_LEFT
 };
 
+// enum Directions {
+//   DIR_UP,
+//   DIR_UP_RIGHT,
+//   DIR_RIGHT,
+//   DIR_DOWN_RIGHT,
+//   DIR_DOWN,
+//   DIR_DOWN_LEFT,
+//   DIR_LEFT,
+//   DIR_UP_LEFT,
+// };
+
 struct Sigil {
   Vector2 position;
   Vector2 projection;
+  int index = 0;
   int value = 0;
   SigilState state = SigilState::IDLE;
-  float percentMoved = 0.0f;
 };
 
 typedef struct Hex {

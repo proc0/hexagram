@@ -43,9 +43,11 @@ void Grid::load() {
 	// hexes.emplace_back(Vector2({ 0.0f, 1.0f }), project(Vector2({ 0.0f, 1.0f })), false);
 
 	sigils.reserve(1 + 6*sumCount(layers));
-	sigils.emplace_back(Vector2({ 0.0f, 0.0f }), Vector2({ 0.0f, 0.0f }), 0);
-	sigils.emplace_back(Vector2({ 3.0f, -1.0f }), project({ 3.0f, -1.0f }), 2);
-	sigils.emplace_back(Vector2({ 3.0f, 0.0f }), project({ 3.0f, 0.0f }), 4);
+	sigils.push_back(Sigil({Vector2({ 0.0f, 0.0f }), Vector2({ 0.0f, 0.0f }), 0, 0, SigilState::IDLE}));
+	sigils.push_back(Sigil({Vector2({ 3.0f, -1.0f }), project({ 3.0f, -1.0f }), 1, 2, SigilState::IDLE}));
+	hexMap.at(Vector2({ 3.0f, -1.0f })).sigilIndex = 1;
+	sigils.push_back(Sigil({Vector2({ 3.0f, 0.0f }), project({ 3.0f, 0.0f }), 2, 4, SigilState::IDLE}));
+	hexMap.at(Vector2({ 3.0f, 0.0f })).sigilIndex = 2;
 }
 
 void Grid::generateMap(int layers) {
@@ -128,34 +130,72 @@ void Grid::updateGrid() {
 			sigilState = SigilState::MOVING;
 			int safeguard = 1000;
 			//TODO: sort by position.y to start moving the top ones
+			//TODO: store possible movements in sigil
+			// start moving only the sigils that have the relevant direction available
+			// recalculate after those initial sigils have moved until all sigils have no more of that direction available
+			// mark the sigils as processed
+
+			//TODO: look at the sigil neighbors to determine who to move,
+			// then look at the opposite direction to check if there was a sigil 
+			// and move that, repeating until there are no more sigil neighbors
 			for (int i = 1; i < sigils.size(); i++) {
+
+
 				Sigil& sigil = sigils[i];
 				sigil.state = SigilState::MOVING;
 				TraceLog(LOG_INFO, "SIGIL POSITION: %f %f", sigil.position.x, sigil.position.y);
 				Hex& currentHex = hexMap.at(sigil.position);
+
 				TraceLog(LOG_INFO, "Current Hex Edge Type: %i", currentHex.edgeType);
 				if (currentHex.edgeType != HexEdgeType::TOP_RIGHT && currentHex.edgeType != HexEdgeType::TOP_LEFT) {
 					Vector2 nextAxial = { sigil.position.x, sigil.position.y - 1.0f };
+					//get neighbor sigil in the direction of the move, and if it's blocked, skip
 					Hex& nextHex = hexMap.at(nextAxial);
-					Hex& prevHex = nextHex;
+					if (nextHex.sigilIndex != 0) {
+						continue;
+					}
+					// Hex& prevHex = nextHex;
 					TraceLog(LOG_INFO, "Next Hex Edge Type: %i", nextHex.edgeType);
-					
-					while (safeguard > 0 && nextHex.edgeType != HexEdgeType::TOP_RIGHT && nextHex.edgeType != HexEdgeType::TOP_LEFT) {
-						prevHex = nextHex;
+					bool continueMove = nextHex.sigilIndex == 0 && nextHex.edgeType != HexEdgeType::TOP_RIGHT && nextHex.edgeType != HexEdgeType::TOP_LEFT;
+
+					while (safeguard > 0 && continueMove) {
+						// prevHex = nextHex;
 						nextAxial = { sigil.position.x, nextAxial.y - 1 };
-						nextHex = hexMap.at(nextAxial);
-						if (nextHex.sigilIndex != 0) {
-							nextHex = prevHex;
-							break;
-						}
+						Hex& searchHex = hexMap.at(nextAxial);
+						continueMove = searchHex.sigilIndex == 0 && searchHex.edgeType != HexEdgeType::TOP_RIGHT && searchHex.edgeType != HexEdgeType::TOP_LEFT;
+						// if (nextHex.sigilIndex != 0) {
+						// 	nextHex = prevHex;
+						// 	break;
+						// }
 						safeguard--;
 					}
 
-					if (nextHex.sigilIndex == 0) {
-						sigil.position = nextHex.position;
-						sigil.projection = nextHex.projection;
-						nextHex.sigilIndex = i;
+					Hex& destHex = hexMap.at(nextAxial);
+
+					// process any neighbor sigils that are in the opposite direction of the move
+					// moving them one down or merging them
+					if (currentHex.edgeType != HexEdgeType::BOTTOM_RIGHT && currentHex.edgeType != HexEdgeType::BOTTOM_LEFT) {
+						Vector2 prevAxial = { sigil.position.x, sigil.position.y + 1.0f };
+						//get neighbor sigil in the direction of the move, and if it's blocked, skip
+						Hex& prevHex = hexMap.at(prevAxial);
+						
+						if (prevHex.sigilIndex > 0) {
+							Sigil& prevSigil = sigils.at(prevHex.sigilIndex);
+							prevSigil.position = { destHex.position.x, destHex.position.y + 1.0f };
+
+							Hex& belowHex = hexMap.at(prevSigil.position);
+							prevSigil.projection = belowHex.projection;
+							
+							belowHex.sigilIndex = prevSigil.index;
+						}
 					}
+
+					// update the leading sigil to the destination
+					sigil.position = destHex.position;
+					sigil.projection = destHex.projection;
+					destHex.sigilIndex = i;
+
+
 				}
 			}
 		}
