@@ -138,7 +138,7 @@ class Grid : public Layer {
     Vector2({ -1.0f, -2.0f }),
     Vector2({ 0.0f, -3.0f }),
   };
-  
+
   const Window& window;
 	Layout layout = Layout(layout_flat, Vector2({ 60.0f, 60.0f }), Vector2({ window.halfWidthf, window.halfHeightf }));
 
@@ -161,6 +161,8 @@ public:
     void drawSigil(const Sigil& sigil) const;
 
     HexEdgeType getHexEdgeType(Vector2 axial);
+    bool checkHexEdgeType(HexEdgeType, Vector2 axial) const;
+    
     void updateGrid();
     // axial to screen
     Vector2 project(Vector2 axial);
