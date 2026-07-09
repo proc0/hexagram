@@ -62,16 +62,16 @@ enum HexEdgeType {
   TOP_LEFT
 };
 
-// enum Directions {
-//   DIR_UP,
-//   DIR_UP_RIGHT,
-//   DIR_RIGHT,
-//   DIR_DOWN_RIGHT,
-//   DIR_DOWN,
-//   DIR_DOWN_LEFT,
-//   DIR_LEFT,
-//   DIR_UP_LEFT,
-// };
+enum Directions {
+  DIR_UP,
+  DIR_UP_RIGHT,
+  DIR_RIGHT,
+  DIR_DOWN_RIGHT,
+  DIR_DOWN,
+  DIR_DOWN_LEFT,
+  DIR_LEFT,
+  DIR_UP_LEFT,
+};
 
 struct Sigil {
   Vector2 position;
@@ -162,6 +162,7 @@ public:
 
     HexEdgeType getHexEdgeType(Vector2 axial);
     bool checkHexEdgeType(HexEdgeType, Vector2 axial) const;
+    Vector2 getNeighborAxial(Directions, Vector2 axial, float offset) const;
     
     void updateGrid();
     // axial to screen

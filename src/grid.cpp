@@ -45,10 +45,10 @@ void Grid::load() {
 	sigils.reserve(1 + 6*sumCount(layers));
 	sigils.push_back(Sigil({Vector2({ 0.0f, 0.0f }), Vector2({ 0.0f, 0.0f }), 0, 0, SigilState::IDLE}));
 	
-	sigils.push_back(Sigil({Vector2({ 2.0f, -1.0f }), project({ 2.0f, -1.0f }), 1, 2, SigilState::IDLE}));
-	hexMap.at(Vector2({ 2.0f, -1.0f })).sigilIndex = 1;
+	sigils.push_back(Sigil({Vector2({ 2.0f, -3.0f }), project({ 2.0f, -3.0f }), 1, 2, SigilState::IDLE}));
+	hexMap.at(Vector2({ 2.0f, -3.0f })).sigilIndex = 1;
 	
-	sigils.push_back(Sigil({Vector2({ 2.0f, 0.0f }), project({ 2.0f, 0.0f }), 2, 4, SigilState::IDLE}));
+	sigils.push_back(Sigil({Vector2({ 2.0f, 0.0f }), project({ 2.0f, 0.0f }), 2, 2, SigilState::IDLE}));
 	hexMap.at(Vector2({ 2.0f, 0.0f })).sigilIndex = 2;
 
 	sigils.push_back(Sigil({Vector2({ 2.0f, 1.0f }), project({ 2.0f, 1.0f }), 3, 8, SigilState::IDLE}));
@@ -145,7 +145,6 @@ void Grid::updateGrid() {
 				sourceSigil.state = SigilState::MOVING;
 				// TraceLog(LOG_INFO, "SIGIL POSITION: %f %f", sourceSigil.position.x, sourceSigil.position.y);
 				Vector2 sourceAxial = sourceSigil.position;
-				// Hex& sourceHex = hexMap.at(sourceAxial);
 
 				TraceLog(LOG_INFO, "Evaluating Sigil");
 
@@ -155,7 +154,7 @@ void Grid::updateGrid() {
 				if (!checkHexEdgeType(HexEdgeType::TOP_RIGHT, sourceAxial) && !checkHexEdgeType(HexEdgeType::TOP_LEFT, sourceAxial)) {
 					// next hex position, one hex in the direction of the current sigil
 					// TODO: abstract this to move in any direction
-					Vector2 targetAxial = { sourceAxial.x, sourceAxial.y - 1.0f };
+					Vector2 targetAxial = getNeighborAxial(Directions::DIR_UP, sourceAxial, 1.0f);
 					TraceLog(LOG_INFO, "Checking initial target Hex");
 
 					//get neighbor sigil in the direction of the move, and if it's blocked, skip
@@ -178,8 +177,9 @@ void Grid::updateGrid() {
 					while (safeguard > 0 && continueMove) {
 						// update next axial coordinate in the direction of movement
 						// TODO: abstract this for any direction
-						targetAxial = { sourceAxial.x, targetAxial.y - 1.0f };
+						targetAxial = getNeighborAxial(Directions::DIR_UP, targetAxial, 1.0f);
 						Hex& newTargetHex = hexMap.at(targetAxial);
+
 						// TODO: abstract this for any direction
 						continueMove = newTargetHex.sigilIndex == 0 && !checkHexEdgeType(HexEdgeType::TOP_RIGHT, targetAxial) && !checkHexEdgeType(HexEdgeType::TOP_LEFT, targetAxial);
 
@@ -201,7 +201,7 @@ void Grid::updateGrid() {
 					if (!checkHexEdgeType(HexEdgeType::BOTTOM_RIGHT, sourceAxial) && !checkHexEdgeType(HexEdgeType::BOTTOM_LEFT, sourceAxial)) {
 						TraceLog(LOG_INFO, "Gathering sigil chain below source sigil");
 
-						Vector2 belowSourceAxial = { sourceAxial.x, sourceAxial.y + 1.0f };
+						Vector2 belowSourceAxial = getNeighborAxial(Directions::DIR_DOWN, sourceAxial, 1.0f);
 						// get neighbor sigil in the direction of the move, and if it's blocked, skip
 						Hex& belowSourceHex = hexMap.at(belowSourceAxial);
 						bool continueChainCollect = belowSourceHex.sigilIndex > 0;
@@ -216,7 +216,7 @@ void Grid::updateGrid() {
 								break;
 							}
 							// move to next below hex
-							belowSourceAxial = { belowSourceAxial.x, belowSourceAxial.y + 1.0f };
+							belowSourceAxial = getNeighborAxial(Directions::DIR_DOWN, belowSourceAxial, 1.0f);
 							TraceLog(LOG_INFO, "Checking next sigil in chain: (%f, %f)", belowSourceAxial.x, belowSourceAxial.y);
 							// check if need to continue
 							Hex& nextBelowSourceHex = hexMap.at(belowSourceAxial);
@@ -232,7 +232,9 @@ void Grid::updateGrid() {
 							for (auto& ax : chainAxials) {
 								Hex& chainHex = hexMap.at(ax);
 								Sigil& chainSig = sigils.at(chainHex.sigilIndex);
-								chainSig.position = { targetAxial.x, targetAxial.y + destinationOffset };
+								chainSig.position = getNeighborAxial(Directions::DIR_DOWN, targetAxial, destinationOffset);
+								//vacate the hex
+								chainHex.sigilIndex = 0;
 
 								Hex& targetChainHex = hexMap.at(chainSig.position);
 								chainSig.projection = targetChainHex.projection;
@@ -255,8 +257,13 @@ void Grid::updateGrid() {
 					}
 
 					// update the leading sigil to the destination
+					Hex& sourceHex = hexMap.at(sourceAxial);
+					// vacate the initial source hex
+					sourceHex.sigilIndex = 0;
+					// update the source sigil positions
 					sourceSigil.position = finalTargetHex.position;
 					sourceSigil.projection = finalTargetHex.projection;
+					// occupy the final target hex with sigil index
 					finalTargetHex.sigilIndex = i;
 
 
@@ -400,6 +407,35 @@ bool Grid::checkHexEdgeType(HexEdgeType edgeType, Vector2 axial) const {
 			isMatch = false;
 	}
 	return isMatch;
+}
+
+Vector2 Grid::getNeighborAxial(Directions dir, Vector2 axial, float offset) const {
+	Vector2 result = axial;
+
+	switch (dir) {
+	case DIR_UP:
+		result = { axial.x, axial.y - 1.0f*offset };
+		break;
+	case DIR_UP_RIGHT:
+		break;
+	case DIR_RIGHT:
+		break;
+	case DIR_DOWN_RIGHT:
+		break;
+	case DIR_DOWN:
+		result = { axial.x, axial.y + 1.0f*offset };
+		break;
+	case DIR_DOWN_LEFT:
+		break;
+	case DIR_LEFT:
+		break;
+	case DIR_UP_LEFT:
+		break;
+	default:
+		result = axial;
+	}
+
+	return result;
 }
 
 Vector2 Grid::roundHex(Vector2 v) {
