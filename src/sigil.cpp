@@ -15,10 +15,14 @@ void Sigil::render() const {
 
 void Sigil::update(const Grid& grid, Direction dir) {
 	HexPoint nextHex = grid.hexNeighbor(hex, dir);
-	if (nextHex != hex) {
+	int maxTries = 10;
+	while (maxTries > 0 && nextHex != hex) {
 		hex = nextHex;
-		position = grid.hexPosition(hex);
+		nextHex = grid.hexNeighbor(hex, dir);
+		maxTries--;
 	}
+	
+	position = grid.hexPosition(hex);
 }
 
 void Sigil::resize(int width, int height) {

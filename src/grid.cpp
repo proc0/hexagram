@@ -30,7 +30,7 @@ void Grid::render() const {
 }
 
 void Grid::renderHex(const HexState& hex) const {
-    DrawPoly(hex.position, 6, hexSize, 0.0f, hex.isActive ? YELLOW : BEIGE);
+    DrawPoly(hex.position, 6, hexSize, 0.0f, BEIGE);
     DrawPolyLines(hex.position, 6, hexSize, 0.0f, BLACK);
     const char* pointLabel = TextFormat("(%d, %d, %d)", hex.point.q, hex.point.r, hex.point.s);
     DrawText(pointLabel, hex.position.x-30.0f, hex.position.y-9.0f, 18, BLACK);
@@ -57,6 +57,19 @@ void Grid::updateHex(Direction dir) {
 	// HexPoint nextHex = hexNeighbor(activeHex, dir);
 	// activeHex = nextHex;
 	// map.at(activeHex).isActive = true;
+}
+
+void Grid::placeIcon(HexPoint hex, SigilIcon icon) {
+	if(!validate(hex)) return;
+
+	map.at(hex).icon = icon;
+	map.at(hex).isOccupied = true;
+}
+
+void Grid::removeIcon(HexPoint hex) {
+	if(!validate(hex)) return;
+
+	map.at(hex).isOccupied = false;
 }
 
 HexPoint Grid::inject(Vector2 point) {
@@ -122,4 +135,12 @@ Vector2 Grid::hexPosition(HexPoint p) const {
     }
 
     return map.at(p).position;
+}
+
+bool Grid::validate(HexPoint p) const {
+	if (abs(p.q) > gridSize || abs(p.r) > gridSize || abs(p.s) > gridSize) {
+    	return false;
+    }
+
+    return true;
 }

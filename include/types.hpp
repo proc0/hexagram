@@ -121,10 +121,16 @@ struct HexPoint {
     bool operator==(const HexPoint&) const = default;
 };
 
+struct SigilIcon {
+    int value;
+    int index;
+};
+
 struct HexState {
   HexPoint point;
   Vector2 position;
-  bool isActive = false;
+  SigilIcon icon;
+  bool isOccupied;
 };
 
 struct Matrix2x2Pair {

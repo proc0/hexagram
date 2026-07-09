@@ -14,7 +14,12 @@ void World::load(){
 
     grid.load();
 
-    sigils.emplace_back(HexPoint(0, 0, 0), grid.hexPosition(0, 0, 0), 2);
+    HexPoint hex = HexPoint(0, 0, 0);
+    // TODO: add SigilIcon to Sigil, and use that to link
+    int val = 2;
+    int idx = 0;
+    sigils.emplace_back(hex, grid.hexPosition(hex), val);
+    grid.placeIcon(hex, SigilIcon(idx, val));
 }
 
 void World::renderUnit() const {

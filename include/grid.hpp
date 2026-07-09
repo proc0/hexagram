@@ -61,21 +61,24 @@ public:
     void renderHex(const HexState&) const;
 
     void update();
-    void updateHex(Direction dir);
+    void updateHex(Direction);
+    void placeIcon(HexPoint, SigilIcon);
+    void removeIcon(HexPoint);
 
     HexPoint inject(Vector2 point);
     Vector2 project(HexPoint);
 
     void resize(int width, int height) override;
 
-    HexPoint hexAdd(HexPoint a, HexPoint b) const;
-    HexPoint hexSubtract(HexPoint a, HexPoint b) const;
-    HexPoint hexMultiply(HexPoint a, int k) const;
-    int hexLength(HexPoint a) const;
-    int hexDistance(HexPoint a, HexPoint b) const;
-    HexPoint hexNeighbor(HexPoint hex, Direction dir) const;
+    HexPoint hexAdd(HexPoint, HexPoint) const;
+    HexPoint hexSubtract(HexPoint, HexPoint) const;
+    HexPoint hexMultiply(HexPoint, int k) const;
+    int hexLength(HexPoint) const;
+    int hexDistance(HexPoint, HexPoint) const;
+    HexPoint hexNeighbor(HexPoint, Direction) const;
     Vector2 hexPosition(int q, int r, int s) const;
     Vector2 hexPosition(HexPoint) const;
+    bool validate(HexPoint) const;
     // void transition(State::Screen);
     // void unload();
 };
