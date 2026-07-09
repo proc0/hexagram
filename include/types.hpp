@@ -78,6 +78,17 @@ namespace State {
     };
 }
 
+// WARNING: assert(length == 6)
+// used for Grid.directions
+enum Direction {
+  UP,
+  UP_RIGHT,
+  DOWN_RIGHT,
+  DOWN,
+  DOWN_LEFT,
+  UP_LEFT,
+};
+
 typedef struct InputEvent {
     Event::Input id;
     Vector2 position;
@@ -98,4 +109,25 @@ class Layer {
 public:
     virtual ~Layer() = default;
     virtual void resize(int width, int height) = 0;
+};
+
+struct HexPoint { 
+    // cube coordinates storage 
+    int q, r, s;
+    // axial coordinates constructor
+    // derive the third coordinate s by -q - r
+    HexPoint(int q1, int r1): q(q1), r(r1), s(-q1 - r1) {}
+    HexPoint(int q1, int r1, int s1): q(q1), r(r1), s(s1) {}
+    bool operator==(const HexPoint&) const = default;
+};
+
+struct HexState {
+  HexPoint point;
+  Vector2 position;
+  bool isActive = false;
+};
+
+struct Matrix2x2Pair {
+    const float f0, f1, f2, f3;
+    const float b0, b1, b2, b3;
 };

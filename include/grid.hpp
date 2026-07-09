@@ -11,27 +11,6 @@
 #define HEX_SIZE 60.0f
 #define GRID_SIZE 3
 
-struct HexPoint { 
-    // cube coordinates storage 
-    int q, r, s;
-    // axial coordinates constructor
-    // derive the third coordinate s by -q - r
-    HexPoint(int q1, int r1): q(q1), r(r1), s(-q1 - r1) {}
-    HexPoint(int q1, int r1, int s1): q(q1), r(r1), s(s1) {}
-    bool operator==(const HexPoint&) const = default;
-};
-
-struct HexState {
-  HexPoint point;
-  Vector2 position;
-  bool isActive = false;
-};
-
-struct Matrix2x2Pair {
-    const float f0, f1, f2, f3;
-    const float b0, b1, b2, b3;
-};
-
 // https://www.redblobgames.com/grids/hexagons/implementation.html
 namespace std {
     template <> struct hash<HexPoint> {
@@ -43,15 +22,6 @@ namespace std {
         }
     };
 }
-
-enum HexDirection {
-  UP,
-  UP_RIGHT,
-  DOWN_RIGHT,
-  DOWN,
-  DOWN_LEFT,
-  UP_LEFT,
-};
 
 class Grid : public Layer {
   std::unordered_map<HexPoint, HexState> map;
@@ -72,7 +42,7 @@ class Grid : public Layer {
     HexPoint(0, 1, -1), HexPoint(-1, 1, 0), HexPoint(-1, 0, 1)
   };
 
-  HexPoint activeHex = HexPoint(0, 0, 0);
+  // HexPoint activeHex = HexPoint(0, 0, 0);
 
   const Window& window;
 
@@ -87,11 +57,11 @@ public:
     void load();
     void generate(int layers);
 
-    void renderGrid() const;
+    void render() const;
     void renderHex(const HexState&) const;
 
-    void updateGrid();
-    void updateHex(HexDirection dir);
+    void update();
+    void updateHex(Direction dir);
 
     HexPoint inject(Vector2 point);
     Vector2 project(HexPoint);
@@ -103,7 +73,9 @@ public:
     HexPoint hexMultiply(HexPoint a, int k) const;
     int hexLength(HexPoint a) const;
     int hexDistance(HexPoint a, HexPoint b) const;
-    HexPoint hexNeighbor(HexPoint hex, HexDirection dir) const;
+    HexPoint hexNeighbor(HexPoint hex, Direction dir) const;
+    Vector2 hexPosition(int q, int r, int s) const;
+    Vector2 hexPosition(HexPoint) const;
     // void transition(State::Screen);
     // void unload();
 };

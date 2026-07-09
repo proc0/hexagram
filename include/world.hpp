@@ -3,14 +3,13 @@
 #include "window.hpp"
 #include "types.hpp"
 #include "grid.hpp"
-
-#include <raylib.h>
+#include "sigil.hpp"
 
 class World : public Layer {
+    std::vector<Sigil> sigils;
+
     const Window& window;
     Grid grid = Grid(window);
-
-    Sound splat;
 
 public:
     World(const Window& window): window(window) {};
@@ -28,7 +27,8 @@ public:
     void updateUnit();
     void updateMain();
     void updateGame();
-    
+    void updateSigils(Direction dir);
+
     void resize(int width, int height) override;
     void transition(State::Screen);
     void unload();

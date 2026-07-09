@@ -5,7 +5,7 @@
 void Grid::load() {
 	generate(gridSize);
 
-	map.at(activeHex).isActive = true;
+	// map.at(activeHex).isActive = true;
 }
 
 // k = number of hex layers
@@ -23,7 +23,7 @@ void Grid::generate(int k) {
 	}
 }
 
-void Grid::renderGrid() const {
+void Grid::render() const {
 	for (auto& [point, hex] : map ) {
 		renderHex(hex);
 	}
@@ -36,27 +36,27 @@ void Grid::renderHex(const HexState& hex) const {
     DrawText(pointLabel, hex.position.x-30.0f, hex.position.y-9.0f, 18, BLACK);
 }
 
-void Grid::updateGrid() {
-	if (IsKeyPressed(KEY_W)) {
-		updateHex(HexDirection::UP);
-	} else if (IsKeyPressed(KEY_E)) {
-		updateHex(HexDirection::UP_RIGHT);
-	} else if (IsKeyPressed(KEY_D)) {
-		updateHex(HexDirection::DOWN_RIGHT);
-	} else if (IsKeyPressed(KEY_S)) {
-		updateHex(HexDirection::DOWN);
-	} else if (IsKeyPressed(KEY_A)) {
-		updateHex(HexDirection::DOWN_LEFT);
-	} else if (IsKeyPressed(KEY_Q)) {
-		updateHex(HexDirection::UP_LEFT);
-	}
+void Grid::update() {
+	// if (IsKeyPressed(KEY_W)) {
+	// 	updateHex(Direction::UP);
+	// } else if (IsKeyPressed(KEY_E)) {
+	// 	updateHex(Direction::UP_RIGHT);
+	// } else if (IsKeyPressed(KEY_D)) {
+	// 	updateHex(Direction::DOWN_RIGHT);
+	// } else if (IsKeyPressed(KEY_S)) {
+	// 	updateHex(Direction::DOWN);
+	// } else if (IsKeyPressed(KEY_A)) {
+	// 	updateHex(Direction::DOWN_LEFT);
+	// } else if (IsKeyPressed(KEY_Q)) {
+	// 	updateHex(Direction::UP_LEFT);
+	// }
 }
 
-void Grid::updateHex(HexDirection dir) {
-	map.at(activeHex).isActive = false;
-	HexPoint nextHex = hexNeighbor(activeHex, dir);
-	activeHex = nextHex;
-	map.at(activeHex).isActive = true;
+void Grid::updateHex(Direction dir) {
+	// map.at(activeHex).isActive = false;
+	// HexPoint nextHex = hexNeighbor(activeHex, dir);
+	// activeHex = nextHex;
+	// map.at(activeHex).isActive = true;
 }
 
 HexPoint Grid::inject(Vector2 point) {
@@ -100,10 +100,26 @@ int Grid::hexDistance(HexPoint a, HexPoint b) const {
     return hexLength(hexSubtract(a, b));
 }
 
-HexPoint Grid::hexNeighbor(HexPoint hex, HexDirection dir) const {
+HexPoint Grid::hexNeighbor(HexPoint hex, Direction dir) const {
     HexPoint neighbor = hexAdd(hex, directions[dir]);
     if (abs(neighbor.q) > gridSize || abs(neighbor.r) > gridSize || abs(neighbor.s) > gridSize) {
     	return hex;
     }
     return neighbor;
+}
+
+Vector2 Grid::hexPosition(int q, int r, int s) const {
+    if (abs(q) > gridSize || abs(r) > gridSize || abs(s) > gridSize) {
+    	return Vector2({ 0.0f, 0.0f });
+    }
+
+    return map.at(HexPoint(q, r, s)).position;
+}
+
+Vector2 Grid::hexPosition(HexPoint p) const {
+    if (abs(p.q) > gridSize || abs(p.r) > gridSize || abs(p.s) > gridSize) {
+    	return Vector2({ 0.0f, 0.0f });
+    }
+
+    return map.at(p).position;
 }
