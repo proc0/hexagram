@@ -45,8 +45,11 @@ class Grid : public Layer {
   // HexPoint activeHex = HexPoint(0, 0, 0);
 
   const Window& window;
-
   Vector2 origin = { window.halfWidthf, window.halfHeightf };
+
+  // NOTE: hexSize could be a vector2 to skew the hexes
+  // needs a custom draw function that draws each hex
+  // and update inject/project accordingly
   float hexSize = HEX_SIZE;
   int gridSize = GRID_SIZE;
 

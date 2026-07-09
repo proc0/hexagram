@@ -79,8 +79,25 @@ HexPoint Grid::inject(Vector2 point) {
         (point.y - origin.y) / hexSize);
     float q = view.b0 * hex.q + view.b1 * hex.r;
     float r = view.b2 * hex.q + view.b3 * hex.r;
+    float s = -q - r;
+    // float division needs to round to the nearest int
+    int q1 = static_cast<int>(roundf(q));
+    int r1 = static_cast<int>(roundf(r));
+    int s1 = static_cast<int>(roundf(s));
+    // after rounding we do not have a guarantee that q + r + s = 0. 
+    // reset the component with the largest change back to what the constraint requires
+    double q_diff = abs(q1 - q);
+    double r_diff = abs(r1 - r);
+    double s_diff = abs(s1 - s);
+    if (q_diff > r_diff && q_diff > s_diff) {
+        q1 = -r1 - s1;
+    } else if (r_diff > s_diff) {
+        r1 = -q1 - s1;
+    } else {
+        s1 = -q1 - r1;
+    }
 
-	return { static_cast<int>(roundf(q)), static_cast<int>(roundf(r)) };
+	return { q1, r1, s1 };
 }
 
 Vector2 Grid::project(HexPoint hexPoint) {
