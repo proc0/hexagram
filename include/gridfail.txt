@@ -1,0 +1,182 @@
+#pragma once
+
+#include "window.hpp"
+#include "types.hpp"
+
+#include <raylib.h>
+
+#include <cstddef>
+#include <unordered_map>
+#include <array>
+
+// NOTE: in order to make this more flexible use <numbers> and std::numbers::sqrt2
+// consteval float sq3over2() { return std::sqrtf(3.0f) * 0.5f }
+constexpr float SQRT3_OVER_2 = 0.86602540378f; 
+constexpr float RAD_60 = 60.0f*DEG2RAD;
+
+// TODO: change to floats, review structs and how to integrate with grid
+// TODO: implement project, inject, and generate to draw hex grid
+// TODO: research how to store/map the grid in array of arrays or maps
+struct Orientation {
+    const float f0, f1, f2, f3;
+    const float b0, b1, b2, b3;
+    const float start_angle; // in multiples of 60°
+    Orientation(float f0_, float f1_, float f2_, float f3_,
+                float b0_, float b1_, float b2_, float b3_,
+                float start_angle_)
+    : f0(f0_), f1(f1_), f2(f2_), f3(f3_),
+      b0(b0_), b1(b1_), b2(b2_), b3(b3_),
+      start_angle(start_angle_) {}
+};
+
+const Orientation layout_pointy
+  = Orientation(sqrtf(3.0f), sqrtf(3.0f)/2.0f, 0.0f, 3.0f/2.0f,
+                sqrtf(3.0f)/3.0f, -1.0f/3.0f, 0.0, 2.0f/3.0f,
+                0.5f);
+const Orientation layout_flat
+  = Orientation(3.0f/2.0f, 0.0f, sqrtf(3.0f)/2.0f, sqrtf(3.0f),
+                2.0f/3.0f, 0.0f, -1.0f/3.0f, sqrtf(3.0f)/3.0f,
+                0.0f);
+
+struct Layout {
+    const Orientation orientation;
+    const Vector2 size;
+    const Vector2 origin;
+    Layout(Orientation orientation_, Vector2 size_, Vector2 origin_)
+    : orientation(orientation_), size(size_), origin(origin_) {}
+};
+
+enum SigilState {
+  IDLE,
+  MOVING,
+  MOVED
+};
+
+enum HexEdgeType {
+  OTHER,
+  TOP_RIGHT,
+  RIGHT,
+  BOTTOM_RIGHT,
+  BOTTOM_LEFT,
+  LEFT,
+  TOP_LEFT
+};
+
+enum Directions {
+  DIR_UP,
+  DIR_UP_RIGHT,
+  DIR_RIGHT,
+  DIR_DOWN_RIGHT,
+  DIR_DOWN,
+  DIR_DOWN_LEFT,
+  DIR_LEFT,
+  DIR_UP_LEFT,
+};
+
+struct Sigil {
+  Vector2 position;
+  Vector2 projection;
+  int index = 0;
+  int value = 0;
+  SigilState state = SigilState::IDLE;
+};
+
+typedef struct Hex {
+	Vector2 position;
+	Vector2 projection;
+	bool isEdge;
+  HexEdgeType edgeType;
+  int sigilIndex;  
+} Hex;
+
+template <> struct std::hash<Vector2> {
+    size_t operator()(const Vector2& v) const {
+        hash<int> int_hash;
+        size_t vx = int_hash(v.x);
+        size_t vy = int_hash(v.y);
+        return vx ^ (vy + 0x9e3779b9 + (vx << 6) + (vx >> 2));
+    }
+};
+
+class Grid : public Layer {
+	// std::vector<std::vector<Hex>> hexesArray = {};
+  std::unordered_map<Vector2, Hex> hexMap = {};
+  std::vector<Sigil> sigils = {};
+  std::array<Vector2, 4> topRightEdgeHexes = { 
+    Vector2({ 0.0f, -3.0f }),
+    Vector2({ 1.0f, -3.0f }),
+    Vector2({ 2.0f, -3.0f }),
+    Vector2({ 3.0f, -3.0f }),
+  };
+  const std::array<Vector2, 4> rightEdgeHexes = { 
+    Vector2({ 3.0f, -3.0f }),
+    Vector2({ 3.0f, -2.0f }),
+    Vector2({ 3.0f, -1.0f }),
+    Vector2({ 3.0f, 0.0f }),
+  };
+  const std::array<Vector2, 4> bottomRightEdgeHexes = { 
+    Vector2({ 3.0f, 0.0f }),
+    Vector2({ 2.0f, 1.0f }),
+    Vector2({ 1.0f, 2.0f }),
+    Vector2({ 0.0f, 3.0f }),
+  };
+  const std::array<Vector2, 4> bottomLeftEdgeHexes = { 
+    Vector2({ 0.0f, 3.0f }),
+    Vector2({ -1.0f, -3.0f }),
+    Vector2({ -2.0f, 3.0f }),
+    Vector2({ -3.0f, 3.0f }),
+  };
+  const std::array<Vector2, 4> leftEdgeHexes = { 
+    Vector2({ -3.0f, 3.0f }),
+    Vector2({ -3.0f, 2.0f }),
+    Vector2({ -3.0f, 1.0f }),
+    Vector2({ -3.0f, 0.0f }),
+  };
+  const std::array<Vector2, 4> topLeftEdgeHexes = { 
+    Vector2({ -3.0f, 0.0f }),
+    Vector2({ -2.0f, -1.0f }),
+    Vector2({ -1.0f, -2.0f }),
+    Vector2({ 0.0f, -3.0f }),
+  };
+
+  const Window& window;
+	Layout layout = Layout(layout_flat, Vector2({ 60.0f, 60.0f }), Vector2({ window.halfWidthf, window.halfHeightf }));
+
+
+  float radius = 60.0f;
+
+  SigilState sigilState = SigilState::IDLE;
+
+public:
+    Grid(const Window& window): window(window) {};
+    ~Grid() = default;
+
+    void load();
+    
+    // void generateArray(int layers);
+    void generateMap(int layers);
+
+    void renderGrid() const;
+    void drawHex(const Hex& hex) const;
+    void drawSigil(const Sigil& sigil) const;
+
+    HexEdgeType getHexEdgeType(Vector2 axial);
+    bool checkHexEdgeType(HexEdgeType, Vector2 axial) const;
+    Vector2 getNeighborAxial(Directions, Vector2 axial, float offset) const;
+    
+    Directions getOppositeDir(Directions) const;
+    HexEdgeType getOppositeEdgeType(HexEdgeType) const;
+
+    void moveSigil(HexEdgeType firstEdge, HexEdgeType secondEdge, Directions dir);
+    
+    void updateGrid();
+    // axial to screen
+    Vector2 project(Vector2 axial);
+    // screen to axial
+    Vector2 inject(Vector2 position);
+    Vector2 roundHex(Vector2 v);
+
+    void resize(int width, int height) override;
+    // void transition(State::Screen);
+    // void unload();
+};
