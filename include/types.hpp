@@ -86,8 +86,37 @@ enum Direction {
   DOWN_RIGHT,
   DOWN,
   DOWN_LEFT,
-  UP_LEFT,
+  UP_LEFT
 };
+
+static inline Direction oppositeDir(Direction dir) {
+    Direction result = dir;
+
+    switch (dir) {
+        case Direction::UP:
+            result = Direction::DOWN;
+            break;
+        case Direction::UP_RIGHT:
+            result = Direction::DOWN_LEFT;
+            break;
+        case Direction::DOWN_RIGHT:
+            result = Direction::UP_LEFT;
+            break;
+        case Direction::DOWN:
+            result = Direction::UP;
+            break;
+        case Direction::DOWN_LEFT:
+            result = Direction::UP_RIGHT;
+            break;
+        case Direction::UP_LEFT:
+            result = Direction::DOWN_RIGHT;
+            break;
+        default:
+            result = dir;
+    }
+
+    return result;
+}
 
 typedef struct InputEvent {
     Event::Input id;
@@ -121,15 +150,15 @@ struct HexPoint {
     bool operator==(const HexPoint&) const = default;
 };
 
-struct SigilIcon {
-    int value;
+struct Effigy {
     int index;
+    int value;
 };
 
 struct HexState {
   HexPoint point;
   Vector2 position;
-  SigilIcon icon;
+  Effigy effigy;
   bool isOccupied;
 };
 

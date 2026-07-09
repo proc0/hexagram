@@ -2,6 +2,7 @@
 
 // #include "config.h"
 #include "raylib.h"
+#include "types.hpp"
 // #include "defaults.hpp"
 
 // #include <string>
@@ -15,12 +16,9 @@ void World::load(){
     grid.load();
 
     HexPoint hex = HexPoint(0, 0, 0);
-    // TODO: add SigilIcon to Sigil, and use that to link
-    int val = 2;
-    int idx = 0;
-    sigils.emplace_back(hex, grid.hexPosition(hex), val);
-    // TODO: rename to addSigilIcon
-    grid.placeIcon(hex, SigilIcon(idx, val));
+    Effigy eff = Effigy(0, 4);
+    sigils.emplace_back(hex, grid.hexPosition(hex), eff);
+    grid.occupy(hex, eff);
 }
 
 void World::renderUnit() const {

@@ -11,13 +11,13 @@ class Sigil : public Layer {
 	HexPoint hex;
 	Vector2 position;
 
+	Effigy effigy;
+	
 	int sigilSize = SIGIL_SIZE;
-	// TODO: add Sigil types instead of value
-	int value;
 
 public:
-	Sigil(HexPoint point, Vector2 pos, int val) 
-		: hex(point), position(pos), value(val) {}
+	Sigil(HexPoint point, Vector2 pos, Effigy eff) 
+		: hex(point), position(pos), effigy(eff) {}
 	~Sigil() = default;
 
 	void load();

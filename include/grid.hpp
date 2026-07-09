@@ -62,8 +62,8 @@ public:
 
     void update();
     void updateHex(Direction);
-    void placeIcon(HexPoint, SigilIcon);
-    void removeIcon(HexPoint);
+    void occupy(HexPoint, Effigy);
+    void vacate(HexPoint);
 
     HexPoint inject(Vector2 point);
     Vector2 project(HexPoint);

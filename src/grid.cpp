@@ -60,14 +60,14 @@ void Grid::updateHex(Direction dir) {
 	// map.at(activeHex).isActive = true;
 }
 
-void Grid::placeIcon(HexPoint hex, SigilIcon icon) {
+void Grid::occupy(HexPoint hex, Effigy eff) {
 	if(!isValid(hex)) return;
 
-	map.at(hex).icon = icon;
+	map.at(hex).effigy = eff;
 	map.at(hex).isOccupied = true;
 }
 
-void Grid::removeIcon(HexPoint hex) {
+void Grid::vacate(HexPoint hex) {
 	if(!isValid(hex)) return;
 
 	map.at(hex).isOccupied = false;
