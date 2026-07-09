@@ -9,6 +9,7 @@
 #include <array>
 
 #define HEX_SIZE 60.0f
+#define GRID_SIZE 3
 
 struct HexPoint { 
     // cube coordinates storage 
@@ -60,22 +61,24 @@ class Grid : public Layer {
     3.0f/2.0f, 0.0f, sqrtf(3.0f)/2.0f, sqrtf(3.0f),
     2.0f/3.0f, 0.0f, -1.0f/3.0f, sqrtf(3.0f)/3.0f
   });
-
-  const std::array<HexPoint, 6> directions = {
-    HexPoint(0, -1, 1), HexPoint(1, -1, 0), HexPoint(1, 0, -1),   
-    HexPoint(0, 1, -1), HexPoint(-1, 1, 0), HexPoint(-1, 0, 1)
-  };
   // pointy top
   // const Matrix2x2Pair view = Matrix2x2Pair({
   //   sqrtf(3.0f), sqrtf(3.0f)/2.0f, 0.0f, 3.0f/2.0f,
   //   sqrtf(3.0f)/3.0f, -1.0f/3.0f, 0.0, 2.0f/3.0f
   // });
+
+  const std::array<HexPoint, 6> directions = {
+    HexPoint(0, -1, 1), HexPoint(1, -1, 0), HexPoint(1, 0, -1),   
+    HexPoint(0, 1, -1), HexPoint(-1, 1, 0), HexPoint(-1, 0, 1)
+  };
+
   HexPoint activeHex = HexPoint(0, 0, 0);
 
   const Window& window;
 
   Vector2 origin = { window.halfWidthf, window.halfHeightf };
   float hexSize = HEX_SIZE;
+  int gridSize = GRID_SIZE;
 
 public:
     Grid(const Window& window): window(window) {};

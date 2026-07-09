@@ -3,7 +3,7 @@
 #include <raylib.h>
 
 void Grid::load() {
-	generate(3);
+	generate(gridSize);
 
 	map.at(activeHex).isActive = true;
 }
@@ -101,5 +101,9 @@ int Grid::hexDistance(HexPoint a, HexPoint b) const {
 }
 
 HexPoint Grid::hexNeighbor(HexPoint hex, HexDirection dir) const {
-    return hexAdd(hex, directions[dir]);
+    HexPoint neighbor = hexAdd(hex, directions[dir]);
+    if (abs(neighbor.q) > gridSize || abs(neighbor.r) > gridSize || abs(neighbor.s) > gridSize) {
+    	return hex;
+    }
+    return neighbor;
 }
