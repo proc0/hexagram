@@ -78,7 +78,9 @@ public:
     HexPoint hexNeighbor(HexPoint, Direction) const;
     Vector2 hexPosition(int q, int r, int s) const;
     Vector2 hexPosition(HexPoint) const;
-    bool validate(HexPoint) const;
+    bool isEdge(HexPoint, Direction) const;
+    bool isOccupied(HexPoint) const;
+    bool isValid(HexPoint) const;
     // void transition(State::Screen);
     // void unload();
 };

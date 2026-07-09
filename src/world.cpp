@@ -19,6 +19,7 @@ void World::load(){
     int val = 2;
     int idx = 0;
     sigils.emplace_back(hex, grid.hexPosition(hex), val);
+    // TODO: rename to addSigilIcon
     grid.placeIcon(hex, SigilIcon(idx, val));
 }
 
@@ -49,6 +50,10 @@ void World::updateMain(){
 
 void World::updateSigils(Direction dir) {
     for (auto& sigil : sigils) {
+        // TODO: sigil.update should return an index to sigils
+        // if index is > 0 (TODO: add null sigil at 0) update that sigil as well.
+        // NOTE: use a while loop, get the first index from the one update
+        // then while (sigilIdx > 0) ... find sigil and update and store sigilIdx again
         sigil.update(grid, dir);
     }
 }

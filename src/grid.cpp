@@ -1,4 +1,5 @@
 #include "grid.hpp"
+#include "types.hpp"
 
 #include <raylib.h>
 
@@ -60,14 +61,14 @@ void Grid::updateHex(Direction dir) {
 }
 
 void Grid::placeIcon(HexPoint hex, SigilIcon icon) {
-	if(!validate(hex)) return;
+	if(!isValid(hex)) return;
 
 	map.at(hex).icon = icon;
 	map.at(hex).isOccupied = true;
 }
 
 void Grid::removeIcon(HexPoint hex) {
-	if(!validate(hex)) return;
+	if(!isValid(hex)) return;
 
 	map.at(hex).isOccupied = false;
 }
@@ -137,7 +138,42 @@ Vector2 Grid::hexPosition(HexPoint p) const {
     return map.at(p).position;
 }
 
-bool Grid::validate(HexPoint p) const {
+bool Grid::isEdge(HexPoint hex, Direction dir) const {
+	bool result = false;
+
+	switch (dir) {
+		case Direction::UP:
+			result = hex.s == 3 || hex.r == -3;
+			break;
+		case Direction::UP_RIGHT:
+			result = hex.r == -3 || hex.q == 3;
+			break;
+		case Direction::DOWN_RIGHT:
+			result = hex.q == 3 || hex.s == -3;
+			break;
+		case Direction::DOWN:
+			result = hex.s == -3 || hex.r == 3;
+			break;
+		case Direction::DOWN_LEFT:
+			result = hex.r == 3 || hex.q == -3;
+			break;
+		case Direction::UP_LEFT:
+			result = hex.q == -3 || hex.s == 3;
+			break;
+		default:
+			result = false;
+	}
+
+	return result;
+}
+
+bool Grid::isOccupied(HexPoint hex) const {
+	if (!isValid(hex)) return false;
+
+	return map.at(hex).isOccupied;
+}
+
+bool Grid::isValid(HexPoint p) const {
 	if (abs(p.q) > gridSize || abs(p.r) > gridSize || abs(p.s) > gridSize) {
     	return false;
     }

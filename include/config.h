@@ -3,7 +3,7 @@
 #define PROJECT_NAME "hexagram"
 #define VERSION "0.2.0"
 #define DEBUG 1
-#define DATE_BUILD "2026-07-09 05:56:43"
+#define DATE_BUILD "2026-07-09 06:31:51"
 #define DIR_ASSETS "assets"
 
 #define PATH_ASSET(filename) DIR_ASSETS "/" filename
