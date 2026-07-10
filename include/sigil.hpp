@@ -27,6 +27,7 @@ public:
 
 	HexPoint getHex() const;
 	Effigy getEffigy() const;
+	void setEffigy(Effigy);
 	bool isActive() const;
 	void enable();
 	void disable();

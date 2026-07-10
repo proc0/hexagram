@@ -42,12 +42,17 @@ std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
 		maxTries--;
 	}
 
-	// TODO: add check for nextHex's sigil and check if it's the same
-	// if (grid.isOccupied(nextHex) && grid.isSigilIcon(sigilIcon)) {
-	//   // occupy nextHex, and update sigilIcon on grid
-	//   hex = nextHex;
-	//   grid.placeIcon(hex, sigilIcon);
-	// }
+	// check if next hex after destination has a sigil
+	if (!grid.isEdge(hex, dir) && grid.isOccupied(nextHex)) {
+		Effigy nextEff = grid.getEffigy(nextHex);
+		// if the values are the same send the mergeSigil index to World
+		if (nextEff.value == effigy.value) {			
+			// occupy nextHex, and update sigilIcon on grid
+			hex = nextHex;
+			mergeSigil = nextEff.index;
+		}
+	}
+
 	// move the sigil to the resulting hex
 	grid.vacate(currHex);
 	position = grid.hexPosition(hex);
@@ -77,6 +82,10 @@ HexPoint Sigil::getHex() const {
 
 Effigy Sigil::getEffigy() const {
 	return effigy;
+}
+
+void Sigil::setEffigy(Effigy eff) {
+	effigy = eff;
 }
 
 bool Sigil::isActive() const {

@@ -6,8 +6,7 @@ namespace Action {
     enum Surface {
         DO_NOTHING,
         NEW_GAME,
-        LOAD_GAME,
-        OPTIONS,
+        RESTART_GAME,
         RESUME_GAME,
         MAIN_MENU,
         CONFIRM_RETURN_MAIN,

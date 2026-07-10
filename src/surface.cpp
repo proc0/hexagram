@@ -380,7 +380,7 @@ void Surface::buttonSimple(const Clay_ElementId& elementId, const Clay_String& b
             .sizing = { 
                 .width = CLAY_SIZING_GROW(0)
             },
-            .padding = CLAY_PADDING_ALL(8),
+            .padding = CLAY_PADDING_ALL(12),
             .childAlignment = { .x = CLAY_ALIGN_X_CENTER },
         }, 
         .backgroundColor = Clay_Hovered() ? SURFACE_BUTTON_COLOR_BG_HL : SURFACE_BUTTON_COLOR_BG,
@@ -396,7 +396,7 @@ void Surface::buttonSimple(const Clay_ElementId& elementId, const Clay_String& b
             textColor = SURFACE_BUTTON_COLOR_FG_HL;
         }
     	Clay_OnHover(handleButtonClick, this);
-        CLAY_TEXT(buttonText, CLAY_TEXT_CONFIG({ .textColor = textColor, .fontSize = 24 }));
+        CLAY_TEXT(buttonText, CLAY_TEXT_CONFIG({ .textColor = textColor, .fontSize = 32 }));
     }
 }
 
@@ -534,7 +534,7 @@ void Surface::menuPause() {
                     .height = CLAY_SIZING_PERCENT(0.5f) 
                 }, 
                 .padding = { 16, 16, 16, 16 },
-                .childGap = 16,
+                .childGap = 2,
                 .layoutDirection = CLAY_TOP_TO_BOTTOM,
             },
             .backgroundColor = SURFACE_MENU_COLOR_BG,
@@ -632,8 +632,7 @@ void Surface::menuPause() {
             }));
 
             buttonSimple(CLAY_ID("ButtonGameResume"), CLAY_STRING("Resume Game"));
-            buttonSimple(CLAY_ID("ButtonGameLoad"), CLAY_STRING("Load Game"));
-            buttonSimple(CLAY_ID("ButtonOptions"), CLAY_STRING("Options"));
+            buttonSimple(CLAY_ID("ButtonGameRestart"), CLAY_STRING("Restart Game"));
             buttonSimple(CLAY_ID("ButtonMainMenu"), CLAY_STRING("Main Menu"));
             buttonSimple(CLAY_ID("ButtonQuit"), CLAY_STRING("Quit"));
         }
@@ -660,7 +659,7 @@ void Surface::menuMain() {
                     .height = CLAY_SIZING_PERCENT(0.5f) 
                 }, 
                 .padding = { 16, 16, 16, 16 },
-                .childGap = 16,
+                .childGap = 2,
                 .layoutDirection = CLAY_TOP_TO_BOTTOM 
             },
             .backgroundColor = SURFACE_MENU_COLOR_BG,
@@ -695,8 +694,6 @@ void Surface::menuMain() {
             }));
 
             buttonSimple(CLAY_ID("ButtonGameNew"), CLAY_STRING("New Game"));
-            buttonSimple(CLAY_ID("ButtonGameLoad"), CLAY_STRING("Load Game"));
-            buttonSimple(CLAY_ID("ButtonOptions"), CLAY_STRING("Options"));
             buttonSimple(CLAY_ID("ButtonQuit"), CLAY_STRING("Quit"));
         }
     }

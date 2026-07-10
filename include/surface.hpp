@@ -83,8 +83,7 @@ public:
         { "ButtonGameNew", Action::Surface::NEW_GAME },
         { "ButtonGameResume", Action::Surface::RESUME_GAME },
         { "ButtonMainMenu", Action::Surface::MAIN_MENU },
-        { "ButtonGameLoad", Action::Surface::LOAD_GAME },
-        { "ButtonOptions", Action::Surface::OPTIONS },
+        { "ButtonGameRestart", Action::Surface::RESTART_GAME },
         { "ButtonConfirm", Action::Surface::CONFIRM_RETURN_MAIN },
         { "ButtonCancel", Action::Surface::CANCEL_RETURN_MAIN },
         { "ButtonQuit", Action::Surface::QUIT_APP }
