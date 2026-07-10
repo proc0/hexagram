@@ -61,6 +61,7 @@ void World::updateMain(){
 }
 
 void World::updateSigils(Direction dir) {
+    TraceLog(LOG_INFO, "======= BEGIN SIGIL UPDATE =======");
     for (auto& sigil : sigils) {
         if (sigil.isActive()) {
             HexPoint sourceHex = sigil.getHex();
@@ -121,6 +122,7 @@ void World::updateSigils(Direction dir) {
 
                 // if the sigil moved, update grid
                 if (chainHex != chainSigil.getHex()) {
+                    TraceLog(LOG_INFO, "Updating grid after chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
                     grid.vacate(chainHex);
                     grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
                 }
@@ -140,6 +142,7 @@ void World::updateSigils(Direction dir) {
         }
     }
 
+    TraceLog(LOG_INFO, "======= END SIGIL UPDATE =======");
 
     if (!grid.isFull()) {
     // if (sigils.size() < 8) {
@@ -198,12 +201,16 @@ void World::placeSigil(HexPoint hex, int value) {
     // is greater than total hexes
     int index = sigils.size();
     if (index >= grid.getTotalHexes()) {
-        for (auto& sigil : sigils) {
+        // WARNING: do not use SENTINEL sigil at index 0!
+        for (int i = 1; i < sigils.size(); ++i) {
+            Sigil& sigil = sigils.at(i);
             if (!sigil.isActive()) {
                 sigil.enable();
-                Effigy eff = sigil.getEffigy();
-                sigil.setEffigy({ eff.index, value });
+                // update sigil index to sigils vector
+                sigil.setEffigy({ sigil.getEffigy().index, value });
+                // make sure to get effigy again after update
                 grid.occupy(hex, sigil.getEffigy());
+                sigil.log("Re-enabling sigil for reuse.");
                 break;
             }
         }
@@ -211,6 +218,7 @@ void World::placeSigil(HexPoint hex, int value) {
         Effigy eff = Effigy(index, value);
         sigils.emplace_back(hex, grid.hexPosition(hex), eff);
         grid.occupy(hex, eff);
+        sigils.at(index).log("Spawning new sigil.");
     }
 }
 

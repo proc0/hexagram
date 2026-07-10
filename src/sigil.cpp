@@ -48,7 +48,7 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
 	int mergeIndex = 0;
 	int chainIndex = 0;
 	
-	TraceLog(LOG_INFO, "----- SIGIL %d (%d) UPDATE -----", effigy.index, effigy.value);
+	TraceLog(LOG_INFO, "----- Sigil %d (%d) Update -----", effigy.index, effigy.value);
 	// save starting position
 	HexPoint sourceHex = hex;
 	// initial target hex in the moving direction
@@ -140,4 +140,8 @@ void Sigil::disable() {
 
 void Sigil::resize(int width, int height) {
 	
+}
+
+void Sigil::log(const char* context) const {
+	TraceLog(LOG_INFO, "Sigil %d (%d) at (%d,%d,%d): %s", effigy.index, effigy.value, hex.q, hex.r, hex.s, context);
 }

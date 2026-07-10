@@ -33,4 +33,5 @@ public:
 	void enable();
 	void disable();
 	void resize(int width, int height) override;
+	void log(const char* context) const;
 };
