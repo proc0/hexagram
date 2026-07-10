@@ -67,8 +67,6 @@ public:
 
     void update();
     void updateHex(Direction);
-    void occupy(HexPoint, Effigy);
-    void vacate(HexPoint);
 
     HexPoint inject(Vector2 point);
     Vector2 project(HexPoint);
@@ -83,6 +81,10 @@ public:
     HexPoint hexNeighbor(HexPoint, Direction) const;
     Vector2 hexPosition(int q, int r, int s) const;
     Vector2 hexPosition(HexPoint) const;
+    
+    void occupy(HexPoint, Effigy);
+    void vacate(HexPoint);
+    Effigy getEffigy(HexPoint) const;
     int getTotalHexes() const;
     bool isEdge(HexPoint, Direction) const;
     bool isOccupied(HexPoint) const;

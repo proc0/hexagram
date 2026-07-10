@@ -23,8 +23,10 @@ public:
 	void load();
 
 	void render() const;
-	void update(const Grid& grid, Direction dir);
+	std::pair<int, int> update(Grid& grid, Direction dir);
 
+	HexPoint getHex() const;
+	Effigy getEffigy() const;
 	bool isActive() const;
 	void enable();
 	void disable();

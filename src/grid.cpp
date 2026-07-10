@@ -185,6 +185,12 @@ bool Grid::isEdge(HexPoint hex, Direction dir) const {
 	return result;
 }
 
+Effigy Grid::getEffigy(HexPoint hex) const {
+	if (!isValid(hex)) return Effigy({});
+
+	return map.at(hex).effigy;
+}
+
 int Grid::getTotalHexes() const {
 	return 1 + 6*sumCount(gridSize);
 }
