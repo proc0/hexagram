@@ -22,6 +22,7 @@ public:
 
 	void load();
 
+	Color getColor() const;
 	void render() const;
 	std::pair<int, int> update(Grid& grid, Direction dir);
 

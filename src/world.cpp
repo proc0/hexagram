@@ -23,14 +23,14 @@ void World::load(){
     sigils.emplace_back(hex, Vector2({}), eff);
     sigils.at(0).disable();
 
-    spawnSigil(HexPoint(0, 0, 0), 4);
-    spawnSigil(HexPoint(0, 2, -2), 4);
-    spawnSigil(HexPoint(0, 3, -3), 12);
-    spawnSigil(HexPoint(-2, 0, 2), 2);
-    spawnSigil(HexPoint(-2, 1, 1), 2);
-    spawnSigil(HexPoint(3, -2, -1), 2);
-    spawnSigil(HexPoint(3, 0, -3), 2);
-    spawnSigil(HexPoint(-2, 3, -1), 8);
+    // placeSigil(HexPoint(0, 0, 0), 4);
+    // placeSigil(HexPoint(0, 2, -2), 4);
+    // placeSigil(HexPoint(0, 3, -3), 12);
+    // placeSigil(HexPoint(-2, 0, 2), 2);
+    // placeSigil(HexPoint(-2, 1, 1), 2);
+    // placeSigil(HexPoint(3, -2, -1), 2);
+    // placeSigil(HexPoint(3, 0, -3), 2);
+    // placeSigil(HexPoint(-2, 3, -1), 8);
 }
 
 void World::renderUnit() const {
@@ -92,6 +92,7 @@ void World::updateSigils(Direction dir) {
                 TraceLog(LOG_INFO, "Start chain move for %d", chainSigil.getEffigy().value);
                 result = chainSigil.update(grid, dir);
 
+                // TODO: abstract this block
                 if (result.first > 0) {
                     Sigil& mergeSigil = sigils.at(result.first);
                     mergeSigil.disable();
@@ -104,6 +105,12 @@ void World::updateSigils(Direction dir) {
             }
 
         }
+    }
+
+
+    if (!grid.isFull()) {
+    // if (sigils.size() < 8) {
+        spawnSigil(2);
     }
 }
 
@@ -147,7 +154,17 @@ void World::updateGame(){
     // }
 }
 
-void World::spawnSigil(HexPoint hex, int value) {
+void World::spawnSigil(int value) {
+    HexPoint spawnPoint = HexPoint(0, 0, 0);
+
+    if (grid.isOccupied(HexPoint(0, 0, 0))) {
+        spawnPoint = grid.hexFindFirstEmpty();
+    }
+
+    placeSigil(spawnPoint, value);
+}
+
+void World::placeSigil(HexPoint hex, int value) {
     if (!grid.isValid(hex)) {
         TraceLog(LOG_ERROR, "Bad hex for spawning sigil!");
         return;

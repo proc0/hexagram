@@ -28,8 +28,9 @@ public:
     void updateMain();
     void updateGame();
     void updateSigils(Direction dir);
-    void spawnSigil(HexPoint, int value);
-    
+    void placeSigil(HexPoint, int value);
+    void spawnSigil(int value);
+
     void resize(int width, int height) override;
     void transition(State::Screen);
     void unload();

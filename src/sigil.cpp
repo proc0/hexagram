@@ -8,11 +8,40 @@ void Sigil::load() {
 	
 }
 
+Color Sigil::getColor() const {
+	Color col = GRAY;
+	switch(effigy.value) {
+		case 4:
+			col = PINK;
+			break;
+		case 8:
+			col = GREEN;
+			break;
+		case 16:
+			col = YELLOW;
+			break;
+		case 32:
+			col = ORANGE;
+			break;
+		case 64:
+			col = RED;
+			break;
+		case 128:
+			col = PURPLE;
+			break;
+		default:
+			col = GRAY;
+	}
+
+	return col;
+}
+
 void Sigil::render() const {
-	DrawPoly(position, 6, sigilSize, 0.0f, PURPLE);
+	DrawPoly(position, 6, sigilSize, 0.0f, getColor());
 	DrawPolyLines(position, 6, sigilSize, 0.0f, BLACK);
 	const char* sigilValue = TextFormat("%d", effigy.value);
-	DrawText(sigilValue, position.x, position.y, 30, BLACK);
+	float fontWidth = MeasureText(sigilValue, 42);
+	DrawText(sigilValue, position.x-fontWidth*0.5f, position.y-21.0f, 42, WHITE);
 }
 
 std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
@@ -25,8 +54,9 @@ std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
 	HexPoint nextHex = grid.hexNeighbor(hex, dir);
 	TraceLog(LOG_INFO, "Next Hex: %d %d %d", nextHex.q, nextHex.r, nextHex.s);
 
-	// neigbhor return self, cannot move
-	if (nextHex == currHex || grid.isEdge(currHex, dir) || grid.isOccupied(nextHex)) {
+	// if neigbhor returns current sigil hex or
+	// the next hex is occupied, sigil cannot move
+	if (nextHex == currHex || grid.isOccupied(nextHex)) {
 		TraceLog(LOG_INFO, "Cannot move forward");
 		return std::make_pair(mergeSigil, chainSigil);
 	}
@@ -43,7 +73,7 @@ std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
 	}
 
 	// check if next hex after destination has a sigil
-	if (!grid.isEdge(hex, dir) && grid.isOccupied(nextHex)) {
+	if (grid.isOccupied(nextHex)) {
 		Effigy nextEff = grid.getEffigy(nextHex);
 		// if the values are the same send the mergeSigil index to World
 		if (nextEff.value == effigy.value) {			

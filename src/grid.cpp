@@ -156,6 +156,19 @@ Vector2 Grid::hexPosition(HexPoint p) const {
     return map.at(p).position;
 }
 
+HexPoint Grid::hexFindFirstEmpty() const {
+	HexPoint result = HexPoint(0, 0, 0);
+
+	for (auto& [hex, state] : map) {
+		if (!state.isOccupied) {
+			result = hex;
+			break;
+		}
+	}
+
+	return result;
+}
+
 bool Grid::isEdge(HexPoint hex, Direction dir) const {
 	bool result = false;
 
@@ -193,6 +206,18 @@ Effigy Grid::getEffigy(HexPoint hex) const {
 
 int Grid::getTotalHexes() const {
 	return 1 + 6*sumCount(gridSize);
+}
+
+bool Grid::isFull() const {
+	bool hasEmpty = false;
+	for (auto& [hex, state] : map) {
+		if (!state.isOccupied) {
+			hasEmpty = true;
+			break;
+		}
+	}
+
+	return !hasEmpty;
 }
 
 bool Grid::isOccupied(HexPoint hex) const {
