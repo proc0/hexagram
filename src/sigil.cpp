@@ -7,7 +7,7 @@
 void Sigil::load() {
 	
 }
-
+// TODO: memoize this in a member var
 Color Sigil::getColor() const {
 	Color col = GRAY;
 	switch(effigy.value) {
@@ -45,72 +45,73 @@ void Sigil::render() const {
 }
 
 std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
-	int mergeSigil = 0;
-	int chainSigil = 0;
+	int mergeIndex = 0;
+	int chainIndex = 0;
 	
 	TraceLog(LOG_INFO, "----- SIGIL %d (%d) UPDATE -----", effigy.index, effigy.value);
-	// save initial starting position
-	HexPoint currHex = hex;
-	HexPoint nextHex = grid.hexNeighbor(hex, dir);
-	TraceLog(LOG_INFO, "Next Hex: %d %d %d", nextHex.q, nextHex.r, nextHex.s);
+	// save starting position
+	HexPoint sourceHex = hex;
+	// initial target hex in the moving direction
+	HexPoint targetHex = grid.hexNeighbor(hex, dir);
+	TraceLog(LOG_INFO, "Target Neighbor Hex: %d %d %d", targetHex.q, targetHex.r, targetHex.s);
 
-	// if neigbhor returns current sigil hex or
-	// the next hex is occupied, sigil cannot move
-	if (nextHex == currHex) {
-		TraceLog(LOG_INFO, "Cannot move forward");
-		return std::make_pair(mergeSigil, chainSigil);
+	// if neigbhor returns source hex, sigil cannot move
+	if (targetHex == sourceHex) {
+		TraceLog(LOG_INFO, "CANNOT MOVE");
+		return std::make_pair(mergeIndex, chainIndex);
 	}
 
-	int maxTries = 10;
-	while (maxTries > 0 && !grid.isEdge(hex, dir) && !grid.isOccupied(nextHex)) {
-		// TraceLog(LOG_INFO, "Move forward");
-		hex = nextHex;
-		// if (grid.isEdge(hex, dir)) break;
-		nextHex = grid.hexNeighbor(hex, dir);
-		// if (grid.isOccupied(nextHex)) break;
-		// TraceLog(LOG_INFO, "Next Hex: %d %d %d", nextHex.q, nextHex.r, nextHex.s);
-		maxTries--;
+	// safety, max moves < number of hexes along direction
+	// depends on hex grid size, which may vary 
+	// TODO: either remove or use something like grid.getSideLength
+	int maxMoves = 30;
+	while (maxMoves > 0 && !grid.isEdge(hex, dir) && !grid.isOccupied(targetHex)) {
+		// move sigil
+		hex = targetHex;
+		// set next target neighbor
+		targetHex = grid.hexNeighbor(hex, dir);
+		maxMoves--;
 	}
 
 	// check if next hex after destination has a sigil
-	if (grid.isOccupied(nextHex)) {
-		Effigy nextEff = grid.getEffigy(nextHex);
-		// if the values are the same send the mergeSigil index to World
-		if (nextEff.value == effigy.value) {			
-			TraceLog(LOG_INFO, "Merging values: %d %d", nextEff.value, effigy.value);
-			// occupy nextHex, and update sigilIcon on grid
-			hex = nextHex;
-			mergeSigil = nextEff.index;
+	if (grid.isOccupied(targetHex)) {
+		Effigy targetEffigy = grid.getEffigy(targetHex);
+		// if the values are the same send the mergeIndex index to World
+		// TODO: separate merge logic into its own method
+		if (targetEffigy.value == effigy.value) {			
+			TraceLog(LOG_INFO, "Merging values: %d %d", targetEffigy.value, effigy.value);
+			// update hex to new target
+			hex = targetHex;
+			// return target index for merging
+			mergeIndex = targetEffigy.index;
 		}
-
-		if (currHex == hex) {
+		// if sigil has not moved
+		if (sourceHex == hex) {
+			// target hex is occupied and sigil cannot move
+			// sigil can still merge but moves end here
 			TraceLog(LOG_INFO, "Cannot move forward or merge");
-			return std::make_pair(mergeSigil, chainSigil);
+			return std::make_pair(mergeIndex, chainIndex);
 		}
-
 	}
 
-	// move the sigil to the resulting hex
-	// grid.vacate(currHex);
-	position = grid.hexPosition(hex);
-	// grid.occupy(hex, effigy);
 	TraceLog(LOG_INFO, "Destination Hex: %d %d %d", hex.q, hex.r, hex.s);
+	// update screen position
+	position = grid.hexPosition(hex);
 
-	// get the hex behind in the opposite direction (will return currHex if edge)
-	HexPoint prevHex = grid.hexNeighbor(currHex, oppositeDir(dir));
+	// get the hex behind in the opposite direction (will return sourceHex if edge)
+	HexPoint rearHex = grid.hexNeighbor(sourceHex, oppositeDir(dir));
 	// if the hex behind the current one (before moving)
 	// contains a sigil, return the index to move it
-	if (prevHex != currHex && grid.isOccupied(prevHex)) {
-		TraceLog(LOG_INFO, "Prev Hex is Occupied: %d %d %d", prevHex.q, prevHex.r, prevHex.s);
-		// retrive effigy to get sigil index to return to World
-		Effigy prevEff = grid.getEffigy(prevHex);
-		TraceLog(LOG_INFO, "Prev Hex: %d (%d)", prevEff.index, prevEff.value);
-		chainSigil = prevEff.index;
+	if (rearHex != sourceHex && grid.isOccupied(rearHex)) {
+		// retrieve effigy to get sigil index to return to World
+		Effigy rearEffigy = grid.getEffigy(rearHex);
+		chainIndex = rearEffigy.index;
+		TraceLog(LOG_INFO, "Rear Hex %d (%d) Occupied at %d %d %d", rearEffigy.index, rearEffigy.value, rearHex.q, rearHex.r, rearHex.s);
 	}
 
 	// return merge sigil index to merge with this one
 	// and a chain sigil to call subsequent sigil update
-	return std::make_pair(mergeSigil, chainSigil);
+	return std::make_pair(mergeIndex, chainIndex);
 }
 
 HexPoint Sigil::getHex() const {

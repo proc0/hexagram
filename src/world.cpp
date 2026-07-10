@@ -63,40 +63,44 @@ void World::updateMain(){
 void World::updateSigils(Direction dir) {
     for (auto& sigil : sigils) {
         if (sigil.isActive()) {
-            HexPoint currHex = sigil.getHex();
-            // call sigil update, and collect any sigil in front to merge
-            // and any sigil behind to start the chain move
+            HexPoint sourceHex = sigil.getHex();
+            // update sigil and get a sigil index to merge
+            // and a sigil index to start chain move (tail sigils)
             std::pair<int, int> result = sigil.update(grid, dir);
 
-            // merge sigils
-            if (result.first > 0) {
-                Sigil& mergeSigil = sigils.at(result.first);
+            int mergeIndex = result.first;
+            int chainIndex = result.second;
+
+            // TODO: move merge process into its own method
+            // merge sigils, only head sigil (of chain) merges
+            if (mergeIndex > 0) {
+                Sigil& mergeSigil = sigils.at(mergeIndex);
                 // mergeSigil.disable();
                 
-                Effigy mergeEff = mergeSigil.getEffigy();
-                Effigy currEff = sigil.getEffigy();
-                
-                // merge the sigil that the current sigil landed on
+                // merge source sigil unto target sigil
                 // the underlying sigil "absorbs" this one
-                TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", currEff.index, currEff.value, mergeEff.index, mergeEff.value);
+                Effigy mergeEffigy = mergeSigil.getEffigy();
+                Effigy sourceEffigy = sigil.getEffigy();
+                
+                TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", sourceEffigy.index, sourceEffigy.value, mergeEffigy.index, mergeEffigy.value);
                 
                 // TODO: remove this dead code if strategy works
                 // this is when current sigil "lands on" underlying sigil and replaces it
-                // Effigy newEff = { currEff.index, currEff.value + mergeEff.value };
+                // Effigy newEff = { sourceEffigy.index, sourceEffigy.value + mergeEffigy.value };
                 
                 // tombstone sigil
                 sigil.disable();
                 // create new effigy with the underlying sigil's index and combined values
-                Effigy newEff = { mergeEff.index, currEff.value + mergeEff.value };
+                Effigy newEff = { mergeEffigy.index, sourceEffigy.value + mergeEffigy.value };
                 mergeSigil.setEffigy(newEff);
                 // update grid effigy
                 grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
             }
 
             // if the sigil moved, update grid
-            if (currHex != sigil.getHex()) {
+            if (sourceHex != sigil.getHex()) {
                 // remove from previous hex
-                grid.vacate(currHex);
+                grid.vacate(sourceHex);
                 // if the sigil merged, don't update grid
                 if (sigil.isActive()) {                    
                     // add to new hex
@@ -104,18 +108,20 @@ void World::updateSigils(Direction dir) {
                 }
             }
 
-            // update the sigil chain
-            int maxTries = 30;
-            while (maxTries > 0 && result.second > 0) {
-                Sigil& chainSigil = sigils.at(result.second);
-                HexPoint currChainHex = chainSigil.getHex();
+            // safety, max chain < number of hexes x number of sigils?
+            // depends on hex grid size, which may vary 
+            // TODO: either remove or use something like grid.getSideLength()*chainLength?
+            int maxChain = 30;
+            while (maxChain > 0 && chainIndex > 0) {
+                Sigil& chainSigil = sigils.at(chainIndex);
+                HexPoint chainHex = chainSigil.getHex();
 
-                TraceLog(LOG_INFO, "Start chain move for %d", chainSigil.getEffigy().value);
+                TraceLog(LOG_INFO, "Start chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
                 result = chainSigil.update(grid, dir);
 
-                // update grid hexes with sigil effigies
-                if (currChainHex != chainSigil.getHex()) {
-                    grid.vacate(currChainHex);
+                // if the sigil moved, update grid
+                if (chainHex != chainSigil.getHex()) {
+                    grid.vacate(chainHex);
                     grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
                 }
 
@@ -128,7 +134,7 @@ void World::updateSigils(Direction dir) {
                 //     TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", chainEff.index, chainEff.value, mergeEff.index, mergeEff.value);
                 //     chainSigil.setEffigy({ chainEff.index, chainEff.value + mergeEff.value });
                 // }
-                maxTries--;
+                maxChain--;
             }
 
         }
