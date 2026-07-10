@@ -82,6 +82,12 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
 			hex = nextHex;
 			mergeSigil = nextEff.index;
 		}
+
+		if (currHex == hex) {
+			TraceLog(LOG_INFO, "Cannot move forward or merge");
+			return std::make_pair(mergeSigil, chainSigil);
+		}
+
 	}
 
 	// move the sigil to the resulting hex

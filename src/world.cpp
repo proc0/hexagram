@@ -63,40 +63,45 @@ void World::updateMain(){
 void World::updateSigils(Direction dir) {
     for (auto& sigil : sigils) {
         if (sigil.isActive()) {
-            // TODO: sigil.update should return an index to sigils
-            // if index is > 0 (TODO: add null sigil at 0) update that sigil as well.
-            // NOTE: use a while loop, get the first index from the one update
-            // then while (sigilIdx > 0) ... find sigil and update and store sigilIdx again
-
             HexPoint currHex = sigil.getHex();
             // call sigil update, and collect any sigil in front to merge
             // and any sigil behind to start the chain move
             std::pair<int, int> result = sigil.update(grid, dir);
 
-            // TODO: move vacate and occupy here (from sigil.update) and make grid const?
-            // grid.occupy(sigil.getHex(), sigil.getEffigy());
-
             // merge sigils
             if (result.first > 0) {
                 Sigil& mergeSigil = sigils.at(result.first);
-                mergeSigil.disable();
+                // mergeSigil.disable();
                 
                 Effigy mergeEff = mergeSigil.getEffigy();
                 Effigy currEff = sigil.getEffigy();
+                
+                // merge the sigil that the current sigil landed on
+                // the underlying sigil "absorbs" this one
                 TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", currEff.index, currEff.value, mergeEff.index, mergeEff.value);
-                Effigy newEff = { currEff.index, currEff.value + mergeEff.value };
-                sigil.setEffigy(newEff);
-
-                // grid.vacate(currHex);
-                // grid.occupy(sigil.getHex(), newEff);
+                
+                // TODO: remove this dead code if strategy works
+                // this is when current sigil "lands on" underlying sigil and replaces it
+                // Effigy newEff = { currEff.index, currEff.value + mergeEff.value };
+                
+                // tombstone sigil
+                sigil.disable();
+                // create new effigy with the underlying sigil's index and combined values
+                Effigy newEff = { mergeEff.index, currEff.value + mergeEff.value };
+                mergeSigil.setEffigy(newEff);
+                // update grid effigy
+                grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
             }
 
             // if the sigil moved, update grid
             if (currHex != sigil.getHex()) {
                 // remove from previous hex
                 grid.vacate(currHex);
-                // add to new hex
-                grid.occupy(sigil.getHex(), sigil.getEffigy());
+                // if the sigil merged, don't update grid
+                if (sigil.isActive()) {                    
+                    // add to new hex
+                    grid.occupy(sigil.getHex(), sigil.getEffigy());
+                }
             }
 
             // update the sigil chain
@@ -104,6 +109,7 @@ void World::updateSigils(Direction dir) {
             while (maxTries > 0 && result.second > 0) {
                 Sigil& chainSigil = sigils.at(result.second);
                 HexPoint currChainHex = chainSigil.getHex();
+
                 TraceLog(LOG_INFO, "Start chain move for %d", chainSigil.getEffigy().value);
                 result = chainSigil.update(grid, dir);
 
@@ -112,7 +118,8 @@ void World::updateSigils(Direction dir) {
                     grid.vacate(currChainHex);
                     grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
                 }
-                // TODO: abstract this block
+                
+                // TODO: do chaining sigil ever merge?
                 // if (result.first > 0) {
                 //     Sigil& mergeSigil = sigils.at(result.first);
                 //     mergeSigil.disable();
@@ -138,20 +145,23 @@ void World::updateGame(){
 
     grid.update();
 
-    if (IsKeyPressed(KEY_W)) {
+    if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
         updateSigils(Direction::UP);
-    } else if (IsKeyPressed(KEY_E)) {
+    } else if (IsKeyPressed(KEY_E) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_RIGHT))) {
         updateSigils(Direction::UP_RIGHT);
-    } else if (IsKeyPressed(KEY_D)) {
+    } else if (IsKeyPressed(KEY_D) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_RIGHT))) {
         updateSigils(Direction::DOWN_RIGHT);
-    } else if (IsKeyPressed(KEY_S)) {
+    } else if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
         updateSigils(Direction::DOWN);
-    } else if (IsKeyPressed(KEY_A)) {
+    } else if (IsKeyPressed(KEY_A) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_LEFT))) {
         updateSigils(Direction::DOWN_LEFT);
-    } else if (IsKeyPressed(KEY_Q)) {
+    } else if (IsKeyPressed(KEY_Q) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_LEFT))) {
         updateSigils(Direction::UP_LEFT);
     }
 
+    if (IsKeyPressed(KEY_SPACE)) {
+        TraceLog(LOG_INFO, "--------------\n\n\n\n\n\n\n-------------");
+    }
     //NOTES: create a vector of Sigil to iterate over
     //Sigils will have a HexPoint that links to Grid
     // For any given direction:
@@ -190,9 +200,25 @@ void World::placeSigil(HexPoint hex, int value) {
         return;
     }
 
-    Effigy eff = Effigy(sigils.size(), value);
-    sigils.emplace_back(hex, grid.hexPosition(hex), eff);
-    grid.occupy(hex, eff);
+    // find disabled sigils if size 
+    // is greater than total hexes
+    int index = sigils.size();
+    if (index >= grid.getTotalHexes()) {
+        for (auto& sigil : sigils) {
+            if (!sigil.isActive()) {
+                sigil.enable();
+                Effigy eff = sigil.getEffigy();
+                sigil.setEffigy({ eff.index, value });
+                grid.occupy(hex, sigil.getEffigy());
+                break;
+            }
+        }
+    } else {
+        Effigy eff = Effigy(index, value);
+        sigils.emplace_back(hex, grid.hexPosition(hex), eff);
+        grid.occupy(hex, eff);
+    }
+
 }
 
 void World::transition(State::Screen screen) {
