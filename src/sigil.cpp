@@ -44,7 +44,7 @@ void Sigil::render() const {
 	DrawText(sigilValue, position.x-fontWidth*0.5f, position.y-21.0f, 42, WHITE);
 }
 
-std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
+std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
 	int mergeSigil = 0;
 	int chainSigil = 0;
 	
@@ -56,7 +56,7 @@ std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
 
 	// if neigbhor returns current sigil hex or
 	// the next hex is occupied, sigil cannot move
-	if (nextHex == currHex || grid.isOccupied(nextHex)) {
+	if (nextHex == currHex) {
 		TraceLog(LOG_INFO, "Cannot move forward");
 		return std::make_pair(mergeSigil, chainSigil);
 	}
@@ -77,6 +77,7 @@ std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
 		Effigy nextEff = grid.getEffigy(nextHex);
 		// if the values are the same send the mergeSigil index to World
 		if (nextEff.value == effigy.value) {			
+			TraceLog(LOG_INFO, "Merging values: %d %d", nextEff.value, effigy.value);
 			// occupy nextHex, and update sigilIcon on grid
 			hex = nextHex;
 			mergeSigil = nextEff.index;
@@ -84,9 +85,9 @@ std::pair<int, int> Sigil::update(Grid& grid, Direction dir) {
 	}
 
 	// move the sigil to the resulting hex
-	grid.vacate(currHex);
+	// grid.vacate(currHex);
 	position = grid.hexPosition(hex);
-	grid.occupy(hex, effigy);
+	// grid.occupy(hex, effigy);
 	TraceLog(LOG_INFO, "Destination Hex: %d %d %d", hex.q, hex.r, hex.s);
 
 	// get the hex behind in the opposite direction (will return currHex if edge)

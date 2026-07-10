@@ -68,6 +68,7 @@ void World::updateSigils(Direction dir) {
             // NOTE: use a while loop, get the first index from the one update
             // then while (sigilIdx > 0) ... find sigil and update and store sigilIdx again
 
+            HexPoint currHex = sigil.getHex();
             // call sigil update, and collect any sigil in front to merge
             // and any sigil behind to start the chain move
             std::pair<int, int> result = sigil.update(grid, dir);
@@ -79,28 +80,47 @@ void World::updateSigils(Direction dir) {
             if (result.first > 0) {
                 Sigil& mergeSigil = sigils.at(result.first);
                 mergeSigil.disable();
+                
                 Effigy mergeEff = mergeSigil.getEffigy();
                 Effigy currEff = sigil.getEffigy();
                 TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", currEff.index, currEff.value, mergeEff.index, mergeEff.value);
-                sigil.setEffigy({ currEff.index, currEff.value + mergeEff.value });
+                Effigy newEff = { currEff.index, currEff.value + mergeEff.value };
+                sigil.setEffigy(newEff);
+
+                // grid.vacate(currHex);
+                // grid.occupy(sigil.getHex(), newEff);
+            }
+
+            // if the sigil moved, update grid
+            if (currHex != sigil.getHex()) {
+                // remove from previous hex
+                grid.vacate(currHex);
+                // add to new hex
+                grid.occupy(sigil.getHex(), sigil.getEffigy());
             }
 
             // update the sigil chain
             int maxTries = 30;
             while (maxTries > 0 && result.second > 0) {
                 Sigil& chainSigil = sigils.at(result.second);
+                HexPoint currChainHex = chainSigil.getHex();
                 TraceLog(LOG_INFO, "Start chain move for %d", chainSigil.getEffigy().value);
                 result = chainSigil.update(grid, dir);
 
-                // TODO: abstract this block
-                if (result.first > 0) {
-                    Sigil& mergeSigil = sigils.at(result.first);
-                    mergeSigil.disable();
-                    Effigy mergeEff = mergeSigil.getEffigy();
-                    Effigy chainEff = chainSigil.getEffigy();
-                    TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", chainEff.index, chainEff.value, mergeEff.index, mergeEff.value);
-                    chainSigil.setEffigy({ chainEff.index, chainEff.value + mergeEff.value });
+                // update grid hexes with sigil effigies
+                if (currChainHex != chainSigil.getHex()) {
+                    grid.vacate(currChainHex);
+                    grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
                 }
+                // TODO: abstract this block
+                // if (result.first > 0) {
+                //     Sigil& mergeSigil = sigils.at(result.first);
+                //     mergeSigil.disable();
+                //     Effigy mergeEff = mergeSigil.getEffigy();
+                //     Effigy chainEff = chainSigil.getEffigy();
+                //     TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", chainEff.index, chainEff.value, mergeEff.index, mergeEff.value);
+                //     chainSigil.setEffigy({ chainEff.index, chainEff.value + mergeEff.value });
+                // }
                 maxTries--;
             }
 
@@ -157,7 +177,7 @@ void World::updateGame(){
 void World::spawnSigil(int value) {
     HexPoint spawnPoint = HexPoint(0, 0, 0);
 
-    if (grid.isOccupied(HexPoint(0, 0, 0))) {
+    if (grid.isOccupied(spawnPoint)) {
         spawnPoint = grid.hexFindFirstEmpty();
     }
 

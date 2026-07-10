@@ -24,7 +24,7 @@ public:
 
 	Color getColor() const;
 	void render() const;
-	std::pair<int, int> update(Grid& grid, Direction dir);
+	std::pair<int, int> update(const Grid& grid, Direction dir);
 
 	HexPoint getHex() const;
 	Effigy getEffigy() const;
