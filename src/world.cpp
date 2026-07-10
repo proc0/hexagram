@@ -127,6 +127,10 @@ void World::updateSigils(Direction dir) {
                     grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
                 }
 
+                // no sigil index to chain
+                if (result.second == 0) {
+                    break;
+                }
                 // TODO: do chaining sigil ever merge?
                 // if (result.first > 0) {
                 //     Sigil& mergeSigil = sigils.at(result.first);
