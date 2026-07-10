@@ -45,6 +45,18 @@ void Sigil::update(const Grid& grid, Direction dir) {
 	// return sigilIdx;
 }
 
+bool Sigil::isActive() const {
+	return active;
+}
+
+void Sigil::enable() {
+	active = true;
+}
+
+void Sigil::disable() {
+	active = false;
+}
+
 void Sigil::resize(int width, int height) {
 	
 }

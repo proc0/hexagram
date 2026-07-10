@@ -12,9 +12,9 @@ class Sigil : public Layer {
 	Vector2 position;
 
 	Effigy effigy;
-	
-	int sigilSize = SIGIL_SIZE;
 
+	int sigilSize = SIGIL_SIZE;
+	bool active = true;
 public:
 	Sigil(HexPoint point, Vector2 pos, Effigy eff) 
 		: hex(point), position(pos), effigy(eff) {}
@@ -25,5 +25,8 @@ public:
 	void render() const;
 	void update(const Grid& grid, Direction dir);
 
+	bool isActive() const;
+	void enable();
+	void disable();
 	void resize(int width, int height) override;
 };

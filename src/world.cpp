@@ -15,10 +15,17 @@ void World::load(){
 
     grid.load();
 
+    sigils.reserve(grid.getTotalHexes());
+
     HexPoint hex = HexPoint(0, 0, 0);
     Effigy eff = Effigy(0, 4);
     sigils.emplace_back(hex, grid.hexPosition(hex), eff);
     grid.occupy(hex, eff);
+
+    HexPoint hex2 = HexPoint(0, 2, -2);
+    Effigy eff2 = Effigy(1, 8);
+    sigils.emplace_back(hex2, grid.hexPosition(hex2), eff2);
+    grid.occupy(hex2, eff2);
 }
 
 void World::renderUnit() const {
@@ -34,7 +41,9 @@ void World::renderGame() const {
     grid.render();
 
     for (auto& sigil : sigils) {
-        sigil.render();
+        if (sigil.isActive()) {
+            sigil.render();
+        }
     }
 }
 
@@ -48,11 +57,13 @@ void World::updateMain(){
 
 void World::updateSigils(Direction dir) {
     for (auto& sigil : sigils) {
-        // TODO: sigil.update should return an index to sigils
-        // if index is > 0 (TODO: add null sigil at 0) update that sigil as well.
-        // NOTE: use a while loop, get the first index from the one update
-        // then while (sigilIdx > 0) ... find sigil and update and store sigilIdx again
-        sigil.update(grid, dir);
+        if (sigil.isActive()) {
+            // TODO: sigil.update should return an index to sigils
+            // if index is > 0 (TODO: add null sigil at 0) update that sigil as well.
+            // NOTE: use a while loop, get the first index from the one update
+            // then while (sigilIdx > 0) ... find sigil and update and store sigilIdx again
+            sigil.update(grid, dir);
+        }
     }
 }
 

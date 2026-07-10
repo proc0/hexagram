@@ -1,5 +1,6 @@
 #include "grid.hpp"
 #include "types.hpp"
+#include "macros.hpp"
 
 #include <raylib.h>
 
@@ -182,6 +183,10 @@ bool Grid::isEdge(HexPoint hex, Direction dir) const {
 	}
 
 	return result;
+}
+
+int Grid::getTotalHexes() const {
+	return 1 + 6*sumCount(gridSize);
 }
 
 bool Grid::isOccupied(HexPoint hex) const {

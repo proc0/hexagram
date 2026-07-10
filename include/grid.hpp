@@ -9,6 +9,8 @@
 #include <array>
 
 #define HEX_SIZE 60.0f
+// Hex grid extent (half width/height) - 1 (center hex)
+// or number of onion hex layers around center hex
 #define GRID_SIZE 3
 
 // https://www.redblobgames.com/grids/hexagons/implementation.html
@@ -81,6 +83,7 @@ public:
     HexPoint hexNeighbor(HexPoint, Direction) const;
     Vector2 hexPosition(int q, int r, int s) const;
     Vector2 hexPosition(HexPoint) const;
+    int getTotalHexes() const;
     bool isEdge(HexPoint, Direction) const;
     bool isOccupied(HexPoint) const;
     bool isValid(HexPoint) const;
