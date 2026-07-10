@@ -118,6 +118,10 @@ HexPoint Sigil::getHex() const {
 	return hex;
 }
 
+void Sigil::setHex(HexPoint point) {
+	hex = point;
+}
+
 Effigy Sigil::getEffigy() const {
 	return effigy;
 }

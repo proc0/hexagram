@@ -27,6 +27,7 @@ public:
 	std::pair<int, int> update(const Grid& grid, Direction dir);
 
 	HexPoint getHex() const;
+	void setHex(HexPoint);
 	Effigy getEffigy() const;
 	void setEffigy(Effigy);
 	bool isActive() const;

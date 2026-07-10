@@ -208,6 +208,7 @@ void World::placeSigil(HexPoint hex, int value) {
                 sigil.enable();
                 // update sigil index to sigils vector
                 sigil.setEffigy({ sigil.getEffigy().index, value });
+                sigil.setHex(hex);
                 // make sure to get effigy again after update
                 grid.occupy(hex, sigil.getEffigy());
                 sigil.log("Re-enabling sigil for reuse.");
