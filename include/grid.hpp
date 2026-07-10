@@ -44,8 +44,6 @@ class Grid : public Layer {
     HexPoint(0, 1, -1), HexPoint(-1, 1, 0), HexPoint(-1, 0, 1)
   };
 
-  // HexPoint activeHex = HexPoint(0, 0, 0);
-
   const Window& window;
   Vector2 origin = { window.halfWidthf, window.halfHeightf };
 

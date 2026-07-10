@@ -6,8 +6,6 @@
 
 void Grid::load() {
 	generate(gridSize);
-
-	// map.at(activeHex).isActive = true;
 }
 
 // k = number of hex layers

@@ -118,7 +118,7 @@ void World::updateSigils(Direction dir) {
                     grid.vacate(currChainHex);
                     grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
                 }
-                
+
                 // TODO: do chaining sigil ever merge?
                 // if (result.first > 0) {
                 //     Sigil& mergeSigil = sigils.at(result.first);
@@ -170,18 +170,6 @@ void World::updateGame(){
     // Move Sigil forward, and then look at the neighbor in opposite direciton of movement
     // if there is a sigil behind, repeat / recurse the same algorithm until the edge of the hex grid
     // then repeate the entire algorithm until the leading sigil hits the edge or another sigil
-    
-    // if(IsKeyPressed(KEY_SPACE)){
-    //     PlaySound(splat);
-    // }
-    
-    // if (IsKeyPressed(KEY_H)){
-    //     if (IsCursorHidden()){
-    //         ShowCursor();
-    //     } else {
-    //         HideCursor();
-    //     }
-    // }
 }
 
 void World::spawnSigil(int value) {
@@ -218,7 +206,6 @@ void World::placeSigil(HexPoint hex, int value) {
         sigils.emplace_back(hex, grid.hexPosition(hex), eff);
         grid.occupy(hex, eff);
     }
-
 }
 
 void World::transition(State::Screen screen) {
