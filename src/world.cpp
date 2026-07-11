@@ -64,9 +64,9 @@ void World::updateSigils(Direction dir) {
     TraceLog(LOG_INFO, "======= BEGIN SIGIL UPDATE =======");
     // For any given direction:
     // Look in the direction in front of the Sigil by getting hexNeighbor
-    // Move Sigil forward, then look at the neighbor in opposite direciton of movement.
-    // If there is a sigil behind, repeat / recurse the same algorithm until the end of the chain,
-    // then repeat the entire algorithm until the leading sigil hits the edge or another sigil.
+    // Move Sigil forward, then look at the neighbor in opposite direction of movement.
+    // If there is a sigil behind, repeat the same algorithm until the end of the chain,
+    // merging only the first sigil in the movement if sigils are the same (i.e. value).
     for (auto& sigil : sigils) {
         if (sigil.isActive()) {
             HexPoint sourceHex = sigil.getHex();
@@ -216,7 +216,7 @@ void World::createSigil(HexPoint hex, int value) {
                 sigil.setHex(hex);
                 sigil.setPosition(grid.hexPosition(hex));
                 grid.occupy(hex, effigy);
-                sigil.log("Re-enabling sigil for reuse.");
+                sigil.log("Reusing existing sigil.");
                 break;
             }
         }
@@ -224,7 +224,7 @@ void World::createSigil(HexPoint hex, int value) {
         Effigy effigy = Effigy(sigilsSize, value);
         sigils.emplace_back(hex, grid.hexPosition(hex), effigy);
         grid.occupy(hex, effigy);
-        sigils.at(sigilsSize).log("Spawning new sigil.");
+        sigils.at(sigilsSize).log("Creating new sigil.");
     }
 }
 
