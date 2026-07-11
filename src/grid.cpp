@@ -30,8 +30,8 @@ void Grid::render() const {
 }
 
 void Grid::renderHex(const HexState& hex) const {
-    DrawPoly(hex.position, 6, hexSize, 0.0f, hex.isOccupied ? RAYWHITE : BEIGE);
-    DrawPolyLines(hex.position, 6, hexSize, 0.0f, BLACK);
+    DrawPoly(hex.position, 6, hexSize, 0.0f, BLACK);
+    DrawPolyLines(hex.position, 6, hexSize, 0.0f, RAYWHITE);
     // const char* pointLabel = TextFormat("(%d, %d, %d)", hex.point.q, hex.point.r, hex.point.s);
     // DrawText(pointLabel, hex.position.x-30.0f, hex.position.y-9.0f, 18, BLACK);
 }
@@ -204,6 +204,12 @@ Effigy Grid::getEffigy(HexPoint hex) const {
 
 int Grid::getTotalHexes() const {
 	return 1 + 6*sumCount(gridSize);
+}
+
+void Grid::clear() {
+	for (auto& [hex, state] : map) {
+		state.isOccupied = false;
+	}
 }
 
 bool Grid::isFull() const {

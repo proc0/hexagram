@@ -13,6 +13,11 @@ void Sigil::reset(HexPoint point, Effigy eff, Vector2 pos) {
 	effigy = eff;
 	position = pos;
 	lastPosition = pos;
+	isAbsorbed = false;
+	isMerged = false;
+	frameMergeIndex = 0;
+	frameMoveIndex = 0;
+	state = State::Sigil::STILL;
 }
 
 // TODO: memoize this in a member var
@@ -56,16 +61,16 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 	int mergeIndex = 0;
 	int chainIndex = 0;
 	
-	TraceLog(LOG_INFO, "----- Sigil %d (%d) Update -----", effigy.index, effigy.value);
+	// TraceLog(LOG_INFO, "----- Sigil %d (%d) Update -----", effigy.index, effigy.value);
 	// save starting position
 	HexPoint sourceHex = hex;
 	// initial target hex in the moving direction
 	HexPoint targetHex = grid.hexNeighbor(hex, dir);
-	TraceLog(LOG_INFO, "Target Neighbor Hex: %d %d %d", targetHex.q, targetHex.r, targetHex.s);
+	// TraceLog(LOG_INFO, "Target Neighbor Hex: %d %d %d", targetHex.q, targetHex.r, targetHex.s);
 
 	// if neigbhor returns source hex, sigil cannot move
 	if (targetHex == sourceHex) {
-		TraceLog(LOG_INFO, "CANNOT MOVE");
+		// TraceLog(LOG_INFO, "CANNOT MOVE");
 		return std::make_pair(mergeIndex, chainIndex);
 	}
 
@@ -89,7 +94,7 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 		// if this sigil was already merged into (by another sigil) do not merge
 		// TODO: separate merge logic into its own method
 		if (targetEffigy.value == effigy.value && !isMerged) {			
-			TraceLog(LOG_INFO, "Merging values: %d %d", targetEffigy.value, effigy.value);
+			// TraceLog(LOG_INFO, "Merging values: %d %d", targetEffigy.value, effigy.value);
 			// update hex to new target
 			hex = targetHex;
 			// return target index for merging
@@ -99,12 +104,12 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 		if (sourceHex == hex) {
 			// target hex is occupied and sigil cannot move
 			// sigil can still merge but moves end here
-			TraceLog(LOG_INFO, "Cannot move forward or merge");
+			// TraceLog(LOG_INFO, "Cannot move forward or merge");
 			return std::make_pair(mergeIndex, chainIndex);
 		}
 	}
 
-	TraceLog(LOG_INFO, "Destination Hex: %d %d %d", hex.q, hex.r, hex.s);
+	// TraceLog(LOG_INFO, "Destination Hex: %d %d %d", hex.q, hex.r, hex.s);
 	// update screen position
 	// position = grid.hexPosition(hex);
 
@@ -116,7 +121,7 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 		// retrieve effigy to get sigil index to return to World
 		Effigy chainEffigy = grid.getEffigy(chainHex);
 		chainIndex = chainEffigy.index;
-		TraceLog(LOG_INFO, "Chain Hex %d (%d) at %d %d %d", chainEffigy.index, chainEffigy.value, chainHex.q, chainHex.r, chainHex.s);
+		// TraceLog(LOG_INFO, "Chain Hex %d (%d) at %d %d %d", chainEffigy.index, chainEffigy.value, chainHex.q, chainHex.r, chainHex.s);
 	}
 
 	// return merge sigil index to merge with this one
@@ -138,6 +143,8 @@ void Sigil::beginMovement() {
 }
 
 void Sigil::updateMovement() {
+	if (state != State::Sigil::MOVING) return;
+	
 	if (frameMoveIndex < ANIM_FRAMES.size()) {
 		// float progress = static_cast<float>(ANIM_FRAMES[animPos.index])/MAX_FRAMES;
 		// animPos.current = Vector2Lerp(animPos.source, animPos.target, progress);
@@ -171,7 +178,6 @@ Vector2 Sigil::getPosition() const {
 void Sigil::setPosition(Vector2 pos) {
 	lastPosition = position;
 	position = pos;
-	TraceLog(LOG_INFO, "SET POSITION: %f %f - %f %f ", lastPosition.x, lastPosition.y, position.x, position.y);
 }
 
 HexPoint Sigil::getHex() const {

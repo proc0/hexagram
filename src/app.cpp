@@ -206,6 +206,13 @@ Clay_RenderCommandArray App::update() {
             
                 surface.transition(state, screen);          
             
+            } else if (surfaceAction == Action::Surface::RESTART_GAME) {
+                TraceLog(LOG_INFO, "RESTART");
+                state = State::App::RUN;
+                
+                world.restart();         
+                surface.transition(state, screen);          
+            
             } else if (surfaceAction == Action::Surface::MAIN_MENU) {
             
                 surface.beginEvent(Event::Surface::SHOW_RETURN_MAIN_MENU_CONFIRMATION);

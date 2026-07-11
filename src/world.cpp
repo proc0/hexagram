@@ -1,12 +1,7 @@
 #include "world.hpp"
 
-// #include "config.h"
-#include "macros.hpp"
 #include "raylib.h"
 #include "types.hpp"
-// #include "defaults.hpp"
-
-// #include <string>
 
 void World::load(){
     // std::string pathAssets = DIR_ASSETS;
@@ -24,6 +19,9 @@ void World::load(){
     sigils.emplace_back(hex, eff, Vector2({}));
     sigils.at(0).disable();
 
+    // fill chance array with initial value
+    // sigilHat.fill(2);
+
     createSigil(HexPoint(0, 0, 0), 2);
     // createSigil(HexPoint(0, 2, -2), 4);
     // createSigil(HexPoint(0, 3, -3), 12);
@@ -32,6 +30,14 @@ void World::load(){
     // createSigil(HexPoint(3, -2, -1), 2);
     // createSigil(HexPoint(3, 0, -3), 2);
     // createSigil(HexPoint(-2, 3, -1), 8);
+}
+
+void World::restart() {
+    for (auto& sigil : sigils) {
+        sigil.disable();
+    }
+    grid.clear();
+    createSigil(HexPoint(0, 0, 0), 2);
 }
 
 void World::renderUnit() const {
@@ -43,7 +49,7 @@ void World::renderMain() const {
 }
 
 void World::renderGame() const {
-    // DrawRectangleGradientH(0, 0, window.width, window.height, BLUE, ORANGE);
+    DrawRectangleGradientV(0, 0, window.width, window.height, BLUE, GREEN);
     grid.render();
 
     for (auto& sigil : sigils) {
@@ -63,12 +69,13 @@ void World::updateMain(){
 
 void World::updateSigils(Direction dir) {
 
-    TraceLog(LOG_INFO, "======= BEGIN SIGIL UPDATE =======");
+    // TraceLog(LOG_INFO, "======= BEGIN SIGIL UPDATE =======");
     // For any given direction:
     // Look in the direction in front of the Sigil by getting hexNeighbor
     // Move Sigil forward, then look at the neighbor in opposite direction of movement.
     // If there is a sigil behind, repeat the same algorithm until the end of the chain,
     // merging only the first sigil in the movement if sigils are the same (i.e. value).
+    int maxValueMerged = 0;
     for (auto& sigil : sigils) {
         if (sigil.isActive()) {
             HexPoint sourceHex = sigil.getHex();
@@ -87,10 +94,12 @@ void World::updateSigils(Direction dir) {
                 Effigy mergeEffigy = mergeSigil.getEffigy();
                 Effigy sourceEffigy = sigil.getEffigy();
                 
-                TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", sourceEffigy.index, sourceEffigy.value, mergeEffigy.index, mergeEffigy.value);
+                // TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", sourceEffigy.index, sourceEffigy.value, mergeEffigy.index, mergeEffigy.value);
 
                 // create new effigy with the underlying sigil's index and combined values
-                Effigy mergedEffigy = { mergeEffigy.index, sourceEffigy.value + mergeEffigy.value };
+                int mergedValue = sourceEffigy.value + mergeEffigy.value;
+                Effigy mergedEffigy = { mergeEffigy.index, mergedValue };
+                maxValueMerged = mergedValue > maxValueMerged ? mergedValue : maxValueMerged;
                 // flag sigil as merged
                 mergeSigil.setMerged(true);
                 mergeSigil.setEffigy(mergedEffigy);
@@ -130,13 +139,13 @@ void World::updateSigils(Direction dir) {
                 Sigil& chainSigil = sigils.at(chainIndex);
                 HexPoint chainSourceHex = chainSigil.getHex();
 
-                TraceLog(LOG_INFO, "Start chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
+                // TraceLog(LOG_INFO, "Start chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
                 result = chainSigil.update(grid, dir, true);
 
                 // if the sigil moved, update grid
                 HexPoint chainTargetHex = chainSigil.getHex();
                 if (chainSourceHex != chainTargetHex) {
-                    TraceLog(LOG_INFO, "Updating grid after chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
+                    // TraceLog(LOG_INFO, "Updating grid after chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
                     // SIGIL + GRID MUTATE
                     grid.vacate(chainSourceHex);
                     chainSigil.setPosition(grid.hexPosition(chainTargetHex));
@@ -150,9 +159,26 @@ void World::updateSigils(Direction dir) {
         }
     }
 
+    // TraceLog(LOG_INFO, "======= END SIGIL UPDATE =======");
 
-    TraceLog(LOG_INFO, "======= END SIGIL UPDATE =======");
+    if (isMaxSigilValue(maxValueMerged)) {
+        maxSigilValue = maxValueMerged;
+        // if (maxSigilValue < 16) {
+        //     // only spawn sigils below 32
+        //     // int maxSigils = sigilChance.size();
+        //     // TODO: weigh each sigil by its value (2 is more freq, 64 less)
+        //     sigilChance[maxSigilValue] = 1.0f/maxSigilValue;
 
+        //     int cursor = 0;
+        //     for (auto& [key, val] : sigilChance) {
+        //         int chance = static_cast<int>(floor(val*sigilHat.size()));
+        //         for (int i = cursor; i < chance && i < sigilHat.size(); ++i) {
+        //             sigilHat[i] = key;
+        //         }
+        //         cursor = chance;
+        //     }
+        // }
+    }
 
     state = State::World::ANIMATING;
 }
@@ -160,34 +186,6 @@ void World::updateSigils(Direction dir) {
 void World::updateGame(){
 
     grid.update();
-
-    if (state == State::World::WAITING) {
-
-        if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
-            updateSigils(Direction::UP);
-        } else if (IsKeyPressed(KEY_E) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_RIGHT))) {
-            updateSigils(Direction::UP_RIGHT);
-        } else if (IsKeyPressed(KEY_D) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_RIGHT))) {
-            updateSigils(Direction::DOWN_RIGHT);
-        } else if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
-            updateSigils(Direction::DOWN);
-        } else if (IsKeyPressed(KEY_A) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_LEFT))) {
-            updateSigils(Direction::DOWN_LEFT);
-        } else if (IsKeyPressed(KEY_Q) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_LEFT))) {
-            updateSigils(Direction::UP_LEFT);
-        }
-
-        if (IsKeyPressed(KEY_SPACE)) {
-            TraceLog(LOG_INFO, "--------------\n\n\n\n\n\n\n-------------");
-            std::string frames = "";
-            for (auto& frame : ANIM_FRAMES) {
-                frames = std::format("{} {}", frames, frame);
-            }
-
-            const char* frameText = TextFormat(frames.c_str());
-            TraceLog(LOG_INFO, frameText);
-        }
-    }
 
     if (state == State::World::ANIMATING) {
         bool stillMoving = false;
@@ -212,14 +210,66 @@ void World::updateGame(){
                     sigil.setAbsorbed(false);
                 }
             }
+
+            // TODO: when grid is full check all possible merges before ending game
             if (!grid.isFull()) {
                 // TODO: spawn at random empty hex location
-                TraceLog(LOG_INFO, "Spawning a new sigil");
+                // TraceLog(LOG_INFO, "Spawning a new sigil");
                 
-                spawnSigil(2);
+                int nextValue = 2;
+                int sigProb = 0;
+                switch(maxSigilValue) {
+                    case 16:
+                        sigProb = GetRandomValue(0, 1);
+                        nextValue = sigProb ? 2 : 4;
+                        break;
+                    case 128:
+                        sigProb = GetRandomValue(0, 4);
+                        if (sigProb == 2) {
+                            nextValue = 4;
+                        } else if (sigProb == 3) {
+                            nextValue = 8;
+                        } else {
+                            nextValue = 2;
+                        }
+                        break;
+                    default:
+                        nextValue = 2;
+                }
+
+                spawnSigil(nextValue);
             }
+
             state = State::World::WAITING;
         }
+    }
+
+    if (state == State::World::WAITING) {
+
+        if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+            updateSigils(Direction::UP);
+        } else if (IsKeyPressed(KEY_E) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_RIGHT))) {
+            updateSigils(Direction::UP_RIGHT);
+        } else if (IsKeyPressed(KEY_D) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_RIGHT))) {
+            updateSigils(Direction::DOWN_RIGHT);
+        } else if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+            updateSigils(Direction::DOWN);
+        } else if (IsKeyPressed(KEY_A) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_LEFT))) {
+            updateSigils(Direction::DOWN_LEFT);
+        } else if (IsKeyPressed(KEY_Q) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_LEFT))) {
+            updateSigils(Direction::UP_LEFT);
+        }
+
+        // if (IsKeyPressed(KEY_SPACE)) {
+        //     TraceLog(LOG_INFO, "--------------\n\n\n\n\n\n\n-------------");
+        //     std::string frames = "";
+        //     for (auto& frame : ANIM_FRAMES) {
+        //         frames = std::format("{} {}", frames, frame);
+        //     }
+
+        //     const char* frameText = TextFormat(frames.c_str());
+        //     TraceLog(LOG_INFO, frameText);
+        // }
     }
 
 }
@@ -263,7 +313,7 @@ void World::createSigil(HexPoint hex, int value) {
                 // sigil.setPosition(grid.hexPosition(hex));
                 sigil.reset(hex, effigy, grid.hexPosition(hex));
                 grid.occupy(hex, effigy);
-                sigil.log("Reusing existing sigil.");
+                // sigil.log("Reusing existing sigil.");
                 break;
             }
         }
@@ -271,8 +321,18 @@ void World::createSigil(HexPoint hex, int value) {
         Effigy effigy = Effigy(sigilsSize, value);
         sigils.emplace_back(hex, effigy, grid.hexPosition(hex));
         grid.occupy(hex, effigy);
-        sigils.at(sigilsSize).log("Creating new sigil.");
+        // sigils.at(sigilsSize).log("Creating new sigil.");
     }
+}
+
+bool World::isMaxSigilValue(int value) const {
+    for (auto& sigil : sigils) {
+        if (value > sigil.getEffigy().value) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void World::transition(State::Screen screen) {

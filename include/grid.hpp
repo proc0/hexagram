@@ -86,6 +86,7 @@ public:
     Effigy getEffigy(HexPoint) const;
     int getTotalHexes() const;
 
+    void clear();
     bool isFull() const;
     bool isEdge(HexPoint, Direction) const;
     bool isOccupied(HexPoint) const;
