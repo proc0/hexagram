@@ -28,7 +28,8 @@ public:
     void updateMain();
     void updateGame();
     void updateSigils(Direction dir);
-    void placeSigil(HexPoint, int value);
+    void createSigil(HexPoint, int value);
+    void placeSigil(int index);
     void spawnSigil(int value);
 
     void resize(int width, int height) override;

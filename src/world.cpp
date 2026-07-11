@@ -23,14 +23,14 @@ void World::load(){
     sigils.emplace_back(hex, Vector2({}), eff);
     sigils.at(0).disable();
 
-    // placeSigil(HexPoint(0, 0, 0), 4);
-    // placeSigil(HexPoint(0, 2, -2), 4);
-    // placeSigil(HexPoint(0, 3, -3), 12);
-    // placeSigil(HexPoint(-2, 0, 2), 2);
-    // placeSigil(HexPoint(-2, 1, 1), 2);
-    // placeSigil(HexPoint(3, -2, -1), 2);
-    // placeSigil(HexPoint(3, 0, -3), 2);
-    // placeSigil(HexPoint(-2, 3, -1), 8);
+    // createSigil(HexPoint(0, 0, 0), 4);
+    // createSigil(HexPoint(0, 2, -2), 4);
+    // createSigil(HexPoint(0, 3, -3), 12);
+    // createSigil(HexPoint(-2, 0, 2), 2);
+    // createSigil(HexPoint(-2, 1, 1), 2);
+    // createSigil(HexPoint(3, -2, -1), 2);
+    // createSigil(HexPoint(3, 0, -3), 2);
+    // createSigil(HexPoint(-2, 3, -1), 8);
 }
 
 void World::renderUnit() const {
@@ -76,43 +76,34 @@ void World::updateSigils(Direction dir) {
 
             int mergeIndex = result.first;
             int chainIndex = result.second;
-
             // TODO: move merge process into its own method
             // merge sigils, only head sigil (of chain) merges
             if (mergeIndex > 0) {
                 Sigil& mergeSigil = sigils.at(mergeIndex);
-                // mergeSigil.disable();
-                
                 // merge source sigil unto target sigil
                 // the underlying sigil "absorbs" this one
                 Effigy mergeEffigy = mergeSigil.getEffigy();
                 Effigy sourceEffigy = sigil.getEffigy();
                 
                 TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", sourceEffigy.index, sourceEffigy.value, mergeEffigy.index, mergeEffigy.value);
-                
-                // TODO: remove this dead code if strategy works
-                // this is when current sigil "lands on" underlying sigil and replaces it
-                // Effigy mergedEffigy = { sourceEffigy.index, sourceEffigy.value + mergeEffigy.value };
-                
+
                 // create new effigy with the underlying sigil's index and combined values
                 Effigy mergedEffigy = { mergeEffigy.index, sourceEffigy.value + mergeEffigy.value };
                 mergeSigil.setEffigy(mergedEffigy);
 
-                //TODO: split the next few lines into placeSigil, which updates sigil position and grid
                 //TODO: do a vector swap with last item to have all disabled at the end
+                // SIGIL + GRID MUTATE
                 // tombstone sigil
                 sigil.disable();
                 // remove from previous hex
-                // BUG: why does sourceHex vs. .getHex() make a difference?
                 grid.vacate(sourceHex);
-                // grid.vacate(sigil.getHex());
-                // sigil.setPosition(grid.hexPosition(mergeSigil.getHex()));
-
                 // update grid effigy
                 grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
 
             } else if (sourceHex != sigil.getHex()) {
-                // if the sigil moved, update grid
+                // SIGIL + GRID MUTATE
+                // if the sigil moved, source hex is
+                // different from hex after sigil update
                 // remove from previous hex
                 grid.vacate(sourceHex);
                 // update sigil position
@@ -137,6 +128,7 @@ void World::updateSigils(Direction dir) {
                 HexPoint chainTargetHex = chainSigil.getHex();
                 if (chainSourceHex != chainTargetHex) {
                     TraceLog(LOG_INFO, "Updating grid after chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
+                    // SIGIL + GRID MUTATE
                     grid.vacate(chainSourceHex);
                     chainSigil.setPosition(grid.hexPosition(chainTargetHex));
                     grid.occupy(chainTargetHex, chainSigil.getEffigy());
@@ -186,6 +178,10 @@ void World::updateGame(){
 
 }
 
+void World::placeSigil(int index) {
+
+}
+
 void World::spawnSigil(int value) {
     // TODO: better algo for finding empty hexes on grid
     HexPoint spawnPoint = HexPoint(0, 0, 0);
@@ -194,10 +190,10 @@ void World::spawnSigil(int value) {
         spawnPoint = grid.hexFindFirstEmpty();
     }
 
-    placeSigil(spawnPoint, value);
+    createSigil(spawnPoint, value);
 }
 
-void World::placeSigil(HexPoint hex, int value) {
+void World::createSigil(HexPoint hex, int value) {
     if (!grid.isValid(hex)) {
         TraceLog(LOG_ERROR, "Bad hex for spawning sigil!");
         return;
@@ -215,7 +211,7 @@ void World::placeSigil(HexPoint hex, int value) {
                 sigil.enable();
                 // update sigil index to sigils vector
                 Effigy effigy = { i, value };
-                // update sigil information
+                // SIGIL + GRID MUTATE
                 sigil.setEffigy(effigy);
                 sigil.setHex(hex);
                 sigil.setPosition(grid.hexPosition(hex));
