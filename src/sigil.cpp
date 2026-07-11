@@ -96,22 +96,30 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
 
 	TraceLog(LOG_INFO, "Destination Hex: %d %d %d", hex.q, hex.r, hex.s);
 	// update screen position
-	position = grid.hexPosition(hex);
+	// position = grid.hexPosition(hex);
 
 	// get the hex behind in the opposite direction (will return sourceHex if edge)
-	HexPoint rearHex = grid.hexNeighbor(sourceHex, oppositeDir(dir));
+	HexPoint chainHex = grid.hexNeighbor(sourceHex, oppositeDir(dir));
 	// if the hex behind the current one (before moving)
 	// contains a sigil, return the index to move it
-	if (rearHex != sourceHex && grid.isOccupied(rearHex)) {
+	if (chainHex != sourceHex && grid.isOccupied(chainHex)) {
 		// retrieve effigy to get sigil index to return to World
-		Effigy rearEffigy = grid.getEffigy(rearHex);
-		chainIndex = rearEffigy.index;
-		TraceLog(LOG_INFO, "Rear Hex %d (%d) Occupied at %d %d %d", rearEffigy.index, rearEffigy.value, rearHex.q, rearHex.r, rearHex.s);
+		Effigy chainEffigy = grid.getEffigy(chainHex);
+		chainIndex = chainEffigy.index;
+		TraceLog(LOG_INFO, "Chain Hex %d (%d) at %d %d %d", chainEffigy.index, chainEffigy.value, chainHex.q, chainHex.r, chainHex.s);
 	}
 
 	// return merge sigil index to merge with this one
 	// and a chain sigil to call subsequent sigil update
 	return std::make_pair(mergeIndex, chainIndex);
+}
+
+Vector2 Sigil::getPosition() const {
+	return position;
+}
+
+void Sigil::setPosition(Vector2 pos) {
+	position = pos;
 }
 
 HexPoint Sigil::getHex() const {

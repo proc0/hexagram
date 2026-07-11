@@ -26,6 +26,8 @@ public:
 	void render() const;
 	std::pair<int, int> update(const Grid& grid, Direction dir);
 
+	Vector2 getPosition() const;
+	void setPosition(Vector2 position);
 	HexPoint getHex() const;
 	void setHex(HexPoint);
 	Effigy getEffigy() const;

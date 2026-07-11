@@ -15,9 +15,9 @@ void World::load(){
 
     grid.load();
 
-    sigils.reserve(grid.getTotalHexes());
+    sigils.reserve(grid.getTotalHexes() + 1);
 
-    // sentinel sigil
+    // ANCHOR sigil
     HexPoint hex = HexPoint(0, 0, 0);
     Effigy eff = Effigy(0, 0);
     sigils.emplace_back(hex, Vector2({}), eff);
@@ -62,6 +62,11 @@ void World::updateMain(){
 
 void World::updateSigils(Direction dir) {
     TraceLog(LOG_INFO, "======= BEGIN SIGIL UPDATE =======");
+    // For any given direction:
+    // Look in the direction in front of the Sigil by getting hexNeighbor
+    // Move Sigil forward, then look at the neighbor in opposite direciton of movement.
+    // If there is a sigil behind, repeat / recurse the same algorithm until the end of the chain,
+    // then repeat the entire algorithm until the leading sigil hits the edge or another sigil.
     for (auto& sigil : sigils) {
         if (sigil.isActive()) {
             HexPoint sourceHex = sigil.getHex();
@@ -87,26 +92,34 @@ void World::updateSigils(Direction dir) {
                 
                 // TODO: remove this dead code if strategy works
                 // this is when current sigil "lands on" underlying sigil and replaces it
-                // Effigy newEff = { sourceEffigy.index, sourceEffigy.value + mergeEffigy.value };
+                // Effigy mergedEffigy = { sourceEffigy.index, sourceEffigy.value + mergeEffigy.value };
                 
+                // create new effigy with the underlying sigil's index and combined values
+                Effigy mergedEffigy = { mergeEffigy.index, sourceEffigy.value + mergeEffigy.value };
+                mergeSigil.setEffigy(mergedEffigy);
+
+                //TODO: split the next few lines into placeSigil, which updates sigil position and grid
+                //TODO: do a vector swap with last item to have all disabled at the end
                 // tombstone sigil
                 sigil.disable();
-                // create new effigy with the underlying sigil's index and combined values
-                Effigy newEff = { mergeEffigy.index, sourceEffigy.value + mergeEffigy.value };
-                mergeSigil.setEffigy(newEff);
+                // remove from previous hex
+                // BUG: why does sourceHex vs. .getHex() make a difference?
+                grid.vacate(sourceHex);
+                // grid.vacate(sigil.getHex());
+                // sigil.setPosition(grid.hexPosition(mergeSigil.getHex()));
+
                 // update grid effigy
                 grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
-            }
 
-            // if the sigil moved, update grid
-            if (sourceHex != sigil.getHex()) {
+            } else if (sourceHex != sigil.getHex()) {
+                // if the sigil moved, update grid
                 // remove from previous hex
                 grid.vacate(sourceHex);
+                // update sigil position
+                sigil.setPosition(grid.hexPosition(sigil.getHex()));
                 // if the sigil merged, don't update grid
-                if (sigil.isActive()) {                    
-                    // add to new hex
-                    grid.occupy(sigil.getHex(), sigil.getEffigy());
-                }
+                // add to new hex
+                grid.occupy(sigil.getHex(), sigil.getEffigy());
             }
 
             // safety, max chain < number of hexes x number of sigils?
@@ -115,41 +128,36 @@ void World::updateSigils(Direction dir) {
             int maxChain = 30;
             while (maxChain > 0 && chainIndex > 0) {
                 Sigil& chainSigil = sigils.at(chainIndex);
-                HexPoint chainHex = chainSigil.getHex();
+                HexPoint chainSourceHex = chainSigil.getHex();
 
                 TraceLog(LOG_INFO, "Start chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
                 result = chainSigil.update(grid, dir);
 
                 // if the sigil moved, update grid
-                if (chainHex != chainSigil.getHex()) {
+                HexPoint chainTargetHex = chainSigil.getHex();
+                if (chainSourceHex != chainTargetHex) {
                     TraceLog(LOG_INFO, "Updating grid after chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
-                    grid.vacate(chainHex);
-                    grid.occupy(chainSigil.getHex(), chainSigil.getEffigy());
+                    grid.vacate(chainSourceHex);
+                    chainSigil.setPosition(grid.hexPosition(chainTargetHex));
+                    grid.occupy(chainTargetHex, chainSigil.getEffigy());
                 }
 
                 // no sigil index to chain
                 if (result.second == 0) {
                     break;
                 }
-                // TODO: do chaining sigil ever merge?
-                // if (result.first > 0) {
-                //     Sigil& mergeSigil = sigils.at(result.first);
-                //     mergeSigil.disable();
-                //     Effigy mergeEff = mergeSigil.getEffigy();
-                //     Effigy chainEff = chainSigil.getEffigy();
-                //     TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", chainEff.index, chainEff.value, mergeEff.index, mergeEff.value);
-                //     chainSigil.setEffigy({ chainEff.index, chainEff.value + mergeEff.value });
-                // }
+
                 maxChain--;
             }
-
         }
     }
 
     TraceLog(LOG_INFO, "======= END SIGIL UPDATE =======");
 
     if (!grid.isFull()) {
-    // if (sigils.size() < 8) {
+        // TODO: spawn at random empty hex location
+        TraceLog(LOG_INFO, "Spawning a new sigil");
+        
         spawnSigil(2);
     }
 }
@@ -175,17 +183,11 @@ void World::updateGame(){
     if (IsKeyPressed(KEY_SPACE)) {
         TraceLog(LOG_INFO, "--------------\n\n\n\n\n\n\n-------------");
     }
-    //NOTES: create a vector of Sigil to iterate over
-    //Sigils will have a HexPoint that links to Grid
-    // For any given direction:
-    // Look in the direction in front of the Sigil by getting hexNeighbor
-    // if it's empty TODO: add Grid.isEmpty
-    // Move Sigil forward, and then look at the neighbor in opposite direciton of movement
-    // if there is a sigil behind, repeat / recurse the same algorithm until the edge of the hex grid
-    // then repeate the entire algorithm until the leading sigil hits the edge or another sigil
+
 }
 
 void World::spawnSigil(int value) {
+    // TODO: better algo for finding empty hexes on grid
     HexPoint spawnPoint = HexPoint(0, 0, 0);
 
     if (grid.isOccupied(spawnPoint)) {
@@ -203,27 +205,30 @@ void World::placeSigil(HexPoint hex, int value) {
 
     // find disabled sigils if size 
     // is greater than total hexes
-    int index = sigils.size();
-    if (index >= grid.getTotalHexes()) {
-        // WARNING: do not use SENTINEL sigil at index 0!
+    int sigilsSize = sigils.size();
+    if (sigilsSize >= grid.getTotalHexes()) {
+        // WARNING: do not use ANCHOR sigil at 0!
+        // iterate backwards to get the most likely disabled?
         for (int i = 1; i < sigils.size(); ++i) {
             Sigil& sigil = sigils.at(i);
             if (!sigil.isActive()) {
                 sigil.enable();
                 // update sigil index to sigils vector
-                sigil.setEffigy({ sigil.getEffigy().index, value });
+                Effigy effigy = { i, value };
+                // update sigil information
+                sigil.setEffigy(effigy);
                 sigil.setHex(hex);
-                // make sure to get effigy again after update
-                grid.occupy(hex, sigil.getEffigy());
+                sigil.setPosition(grid.hexPosition(hex));
+                grid.occupy(hex, effigy);
                 sigil.log("Re-enabling sigil for reuse.");
                 break;
             }
         }
     } else {
-        Effigy eff = Effigy(index, value);
-        sigils.emplace_back(hex, grid.hexPosition(hex), eff);
-        grid.occupy(hex, eff);
-        sigils.at(index).log("Spawning new sigil.");
+        Effigy effigy = Effigy(sigilsSize, value);
+        sigils.emplace_back(hex, grid.hexPosition(hex), effigy);
+        grid.occupy(hex, effigy);
+        sigils.at(sigilsSize).log("Spawning new sigil.");
     }
 }
 
