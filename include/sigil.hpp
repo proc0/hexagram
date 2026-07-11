@@ -14,7 +14,10 @@ class Sigil : public Layer {
 	Effigy effigy;
 
 	int sigilSize = SIGIL_SIZE;
+
 	bool active = true;
+	bool isMerged = false;
+
 public:
 	Sigil(HexPoint point, Vector2 pos, Effigy eff) 
 		: hex(point), position(pos), effigy(eff) {}
@@ -22,19 +25,26 @@ public:
 
 	void load();
 
-	Color getColor() const;
 	void render() const;
-	std::pair<int, int> update(const Grid& grid, Direction dir);
+	std::pair<int, int> update(const Grid& grid, Direction dir, bool isChain);
+
+	Color getColor() const;
+
+	void setMerged(bool);
 
 	Vector2 getPosition() const;
 	void setPosition(Vector2 position);
+
 	HexPoint getHex() const;
 	void setHex(HexPoint);
+	
 	Effigy getEffigy() const;
 	void setEffigy(Effigy);
+	
 	bool isActive() const;
 	void enable();
 	void disable();
+	
 	void resize(int width, int height) override;
 	void log(const char* context) const;
 };

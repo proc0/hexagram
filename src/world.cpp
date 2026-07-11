@@ -72,7 +72,7 @@ void World::updateSigils(Direction dir) {
             HexPoint sourceHex = sigil.getHex();
             // update sigil and get a sigil index to merge
             // and a sigil index to start chain move (tail sigils)
-            std::pair<int, int> result = sigil.update(grid, dir);
+            std::pair<int, int> result = sigil.update(grid, dir, false);
 
             int mergeIndex = result.first;
             int chainIndex = result.second;
@@ -99,6 +99,8 @@ void World::updateSigils(Direction dir) {
                 grid.vacate(sourceHex);
                 // update grid effigy
                 grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
+                // flag sigil as merged
+                mergeSigil.setMerged(true);
 
             } else if (sourceHex != sigil.getHex()) {
                 // SIGIL + GRID MUTATE
@@ -122,7 +124,7 @@ void World::updateSigils(Direction dir) {
                 HexPoint chainSourceHex = chainSigil.getHex();
 
                 TraceLog(LOG_INFO, "Start chain move for %d (%d)", chainSigil.getEffigy().index, chainSigil.getEffigy().value);
-                result = chainSigil.update(grid, dir);
+                result = chainSigil.update(grid, dir, true);
 
                 // if the sigil moved, update grid
                 HexPoint chainTargetHex = chainSigil.getHex();
@@ -133,15 +135,16 @@ void World::updateSigils(Direction dir) {
                     chainSigil.setPosition(grid.hexPosition(chainTargetHex));
                     grid.occupy(chainTargetHex, chainSigil.getEffigy());
                 }
-
-                // no sigil index to chain
-                if (result.second == 0) {
-                    break;
-                }
-
+                // update chain index to continue
+                chainIndex = result.second;
                 maxChain--;
             }
         }
+    }
+
+    // clear merged flag on second pass
+    for (auto& sigil : sigils) {
+        sigil.setMerged(false);
     }
 
     TraceLog(LOG_INFO, "======= END SIGIL UPDATE =======");

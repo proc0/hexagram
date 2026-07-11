@@ -44,7 +44,7 @@ void Sigil::render() const {
 	DrawText(sigilValue, position.x-fontWidth*0.5f, position.y-21.0f, 42, WHITE);
 }
 
-std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
+std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain) {
 	int mergeIndex = 0;
 	int chainIndex = 0;
 	
@@ -74,11 +74,13 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
 	}
 
 	// check if next hex after destination has a sigil
-	if (grid.isOccupied(targetHex)) {
+	// if this is a chain move, do not merge
+	if (grid.isOccupied(targetHex) && !isChain) {
 		Effigy targetEffigy = grid.getEffigy(targetHex);
 		// if the values are the same send the mergeIndex index to World
+		// if this sigil was already merged into (by another sigil) do not merge
 		// TODO: separate merge logic into its own method
-		if (targetEffigy.value == effigy.value) {			
+		if (targetEffigy.value == effigy.value && !isMerged) {			
 			TraceLog(LOG_INFO, "Merging values: %d %d", targetEffigy.value, effigy.value);
 			// update hex to new target
 			hex = targetHex;
@@ -112,6 +114,10 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir) {
 	// return merge sigil index to merge with this one
 	// and a chain sigil to call subsequent sigil update
 	return std::make_pair(mergeIndex, chainIndex);
+}
+
+void Sigil::setMerged(bool hasMerged) {
+	isMerged = hasMerged;
 }
 
 Vector2 Sigil::getPosition() const {
