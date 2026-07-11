@@ -11,7 +11,7 @@
 #define HEX_SIZE 60.0f
 // Hex grid extent (half width/height) - 1 (center hex)
 // or number of onion hex layers around center hex
-#define GRID_SIZE 3
+#define GRID_SIZE 2
 
 // https://www.redblobgames.com/grids/hexagons/implementation.html
 namespace std {

@@ -11,6 +11,8 @@ class World : public Layer {
     const Window& window;
     Grid grid = Grid(window);
 
+    State::World state = State::World::WAITING;
+
 public:
     World(const Window& window): window(window) {};
     ~World() = default;

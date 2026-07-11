@@ -244,9 +244,9 @@ Clay_RenderCommandArray App::update() {
     }
 
     Clay_BeginLayout();
-	GameState gameState = (game.*game.update)(state, inputEvent);
+	// GameState gameState = (game.*game.update)(state, inputEvent);
 	(world.*world.update)();
-    (surface.*surface.display)(gameState);
+    // (surface.*surface.display)(gameState);
     (surface.*surface.menu)();
     Clay_RenderCommandArray renderCommands = Clay_EndLayout(GetFrameTime());
 

@@ -1,12 +1,20 @@
 #include "sigil.hpp"
+#include "raymath.h"
 #include "types.hpp"
 
 #include <raylib.h>
-#include <utility>
 
 void Sigil::load() {
 	
 }
+
+void Sigil::reset(HexPoint point, Effigy eff, Vector2 pos) {
+	hex = point;
+	effigy = eff;
+	position = pos;
+	lastPosition = pos;
+}
+
 // TODO: memoize this in a member var
 Color Sigil::getColor() const {
 	Color col = GRAY;
@@ -116,8 +124,44 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 	return std::make_pair(mergeIndex, chainIndex);
 }
 
+void Sigil::beginMovement() {
+	state = State::Sigil::MOVING;
+	// animPos.source = lastPosition;
+	// animPos.current = lastPosition;
+	// animPos.target = position;
+	// animPos.index = 0;
+	// animPos.state = State::Animate::PLAYING;
+	targetPosition = position;
+	position = lastPosition;
+	frameMoveIndex = 0;
+	// TraceLog(LOG_INFO, "BEGIN ANIMATION: %f %f - %f %f ", lastPosition.x, lastPosition.y, position.x, position.y);
+}
+
+void Sigil::updateMovement() {
+	if (frameMoveIndex < ANIM_FRAMES.size()) {
+		// float progress = static_cast<float>(ANIM_FRAMES[animPos.index])/MAX_FRAMES;
+		// animPos.current = Vector2Lerp(animPos.source, animPos.target, progress);
+		position = Vector2Lerp(lastPosition, targetPosition, ANIM_FRAMES[frameMoveIndex]);
+		frameMoveIndex++;
+	} else {
+		state = State::Sigil::STILL;
+	}
+}
+
+void Sigil::setAbsorbed(bool absorbed) {
+	isAbsorbed = absorbed;
+}
+
+bool Sigil::hasBeenAbsorbed() const {
+	return isAbsorbed;
+}
+
 void Sigil::setMerged(bool hasMerged) {
 	isMerged = hasMerged;
+}
+
+bool Sigil::hasMerged() const {
+	return isMerged;
 }
 
 Vector2 Sigil::getPosition() const {
@@ -125,7 +169,9 @@ Vector2 Sigil::getPosition() const {
 }
 
 void Sigil::setPosition(Vector2 pos) {
+	lastPosition = position;
 	position = pos;
+	TraceLog(LOG_INFO, "SET POSITION: %f %f - %f %f ", lastPosition.x, lastPosition.y, position.x, position.y);
 }
 
 HexPoint Sigil::getHex() const {
@@ -137,11 +183,26 @@ void Sigil::setHex(HexPoint point) {
 }
 
 Effigy Sigil::getEffigy() const {
+	if (isMerged) {
+		return nextEffigy;
+	}
 	return effigy;
 }
 
 void Sigil::setEffigy(Effigy eff) {
-	effigy = eff;
+	if (isMerged) {
+		nextEffigy = eff;
+	} else {
+		effigy = eff;
+	}
+}
+
+void Sigil::finishMerge() {
+	effigy = nextEffigy;
+}
+
+bool Sigil::isMoving() const {
+	return state == State::Sigil::MOVING;
 }
 
 bool Sigil::isActive() const {

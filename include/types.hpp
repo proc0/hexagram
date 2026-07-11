@@ -66,7 +66,7 @@ namespace State {
         PLAY,
         HOLD,
         OVER,
-        END
+        FINISH
     };
 
     enum Pointer {
@@ -74,6 +74,16 @@ namespace State {
         GRAB,
         DRAG,
         DROP
+    };
+
+    enum Sigil {
+        STILL,
+        MOVING
+    };
+
+    enum World {
+        WAITING,
+        ANIMATING
     };
 }
 

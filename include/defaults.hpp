@@ -4,7 +4,7 @@
 
 #define TARGET_FPS 120
 // screen defaults
-#define SCREEN_WIDTH 1280
+#define SCREEN_WIDTH 720
 #define SCREEN_HEIGHT 720
 // centimeters/pixel at 1280x720px
 #define SCREEN_UNIT 1.0f
