@@ -530,7 +530,7 @@ void Surface::menuPause() {
         CLAY(contentPauseMenuId, {
             .layout = { 
                 .sizing = { 
-                    .width = CLAY_SIZING_PERCENT(0.33f), 
+                    .width = CLAY_SIZING_PERCENT(0.55f), 
                     .height = CLAY_SIZING_PERCENT(0.5f) 
                 }, 
                 .padding = { 16, 16, 16, 16 },
@@ -655,7 +655,7 @@ void Surface::menuMain() {
         CLAY(contentMainMenuId, {
             .layout = { 
                 .sizing = { 
-                    .width = CLAY_SIZING_PERCENT(0.33f), 
+                    .width = CLAY_SIZING_PERCENT(0.55f), 
                     .height = CLAY_SIZING_PERCENT(0.5f) 
                 }, 
                 .padding = { 16, 16, 16, 16 },
@@ -708,7 +708,7 @@ void Surface::displayGame(GameState gameState) {
         .layout = { 
             .sizing = { 
                 .width = CLAY_SIZING_GROW(0), 
-                // .height = CLAY_SIZING_GROW(0) 
+                .height = CLAY_SIZING_GROW(0) 
             }, 
             .padding = { 16, 16, 16, 16 }, 
             .childGap = 16
@@ -724,8 +724,10 @@ void Surface::displayGame(GameState gameState) {
             },
         }) {            
             // std::string&& numClicks = std::format("COUNTER: {}", gameState.raylibLogoClicks);
-            const char* numClicksText = TextFormat("COUNTER: %d", gameState.raylibLogoClicks);
-            Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(strlen(numClicksText)), .chars = numClicksText };
+            // const char* numClicksText = TextFormat("COUNTER: %d", 10);
+            scoreText = "Score: " + std::to_string(10);
+            // Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(strlen(numClicksText)), .chars = numClicksText };
+            Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(scoreText.length()), .chars = scoreText.c_str() };
             // CLAY_TEXT(Clay__IntToString(gameState.raylibLogoClicks), CLAY_TEXT_CONFIG({ 
             CLAY_TEXT(numClicksClayString, CLAY_TEXT_CONFIG({
                 .textColor = Clay_Color({255,255,255,255}),
@@ -733,40 +735,62 @@ void Surface::displayGame(GameState gameState) {
             }));
         }
 
-        CLAY(CLAY_ID("CenterCounter"), {
-            .layout = {
-                .sizing = { 
-                    .width = CLAY_SIZING_GROW(0), 
-                }, 
-                .childAlignment = { .x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER }
-            },
-        }) {    
-            const char* numBouncesText = TextFormat("BOUNCES: %d", gameState.raylibLogoBounces);
-            Clay_String numBouncesClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(strlen(numBouncesText)), .chars = numBouncesText };
-            // CLAY_TEXT(Clay__IntToString(gameState.raylibLogoClicks), CLAY_TEXT_CONFIG({ 
-            CLAY_TEXT(numBouncesClayString, CLAY_TEXT_CONFIG({ 
-                .textColor = Clay_Color({255,255,255,255}),
-                .fontSize = 48,
-            }));
-        }
 
-        CLAY(CLAY_ID("RightCounter"), {
-            .layout = {
-                .sizing = { 
-                    .width = CLAY_SIZING_GROW(0), 
-                }, 
-                .childAlignment = { .x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER }
-            },
-        }) {    
-            const char* numCornersText = TextFormat("CORNERS: %d", gameState.raylibLogoCorners);
-            Clay_String numCornersClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(strlen(numCornersText)), .chars = numCornersText };
-            // CLAY_TEXT(Clay__IntToString(gameState.raylibLogoClicks), CLAY_TEXT_CONFIG({ 
-            CLAY_TEXT(numCornersClayString, CLAY_TEXT_CONFIG({ 
-                .textColor = Clay_Color({255,255,255,255}),
-                .fontSize = 48,
-            }));
+        if (gameState.state == State::Game::OVER) {
+            Clay_ElementId contentPauseMenuId = CLAY_ID("ContentGameOverModal");
+            CLAY(contentPauseMenuId, {
+                .layout = { 
+                    .sizing = { 
+                        .width = CLAY_SIZING_PERCENT(0.55f), 
+                        .height = CLAY_SIZING_PERCENT(0.5f) 
+                    }, 
+                    .padding = { 16, 16, 16, 16 },
+                    .childGap = 2,
+                    .layoutDirection = CLAY_TOP_TO_BOTTOM,
+                },
+                .backgroundColor = SURFACE_MENU_COLOR_BG,
+                .floating = { 
+                    .offset = {0, 0}, 
+                    .zIndex = 1, 
+                    .attachPoints = { 
+                        CLAY_ATTACH_POINT_CENTER_CENTER, 
+                        CLAY_ATTACH_POINT_CENTER_CENTER 
+                    }, 
+                    .attachTo = CLAY_ATTACH_TO_PARENT 
+                },
+                .transition = {
+                    .handler = Clay_EaseOut,
+                    .duration = 0.3f,
+                    .properties = static_cast<Clay_TransitionProperty>(CLAY_TRANSITION_PROPERTY_DIMENSIONS | CLAY_TRANSITION_PROPERTY_POSITION | CLAY_TRANSITION_PROPERTY_OVERLAY_COLOR | CLAY_TRANSITION_PROPERTY_BACKGROUND_COLOR),
+                    .enter = { .setInitialState = ExitSlideUp },
+                    .exit = { .setFinalState = ExitSlideUp },
+                }
+            }) {
+                if (Clay_Hovered() && buttonHoverId != contentPauseMenuId.id) {
+                    buttonHoverId = contentPauseMenuId.id;
+                    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+                }
+
+                CLAY_TEXT(CLAY_STRING("GAME OVER"), CLAY_TEXT_CONFIG({ 
+                    .textColor = SURFACE_BUTTON_COLOR_FG,
+                    .fontSize = 48,
+                }));
+
+                CLAY_TEXT(CLAY_STRING("Thank you for playing!"), CLAY_TEXT_CONFIG({ 
+                    .textColor = SURFACE_BUTTON_COLOR_FG,
+                    .fontSize = 24,
+                }));
+
+                buttonSimple(CLAY_ID("ButtonGameRestart"), CLAY_STRING("Restart Game"));
+                buttonSimple(CLAY_ID("ButtonQuit"), CLAY_STRING("Quit"));
+            }
+
+
+            // END GAME OVER MODAL
         }
     }
+
+    buttonAction = Action::Surface::DO_NOTHING;
 }
 
 // void Surface::layout(GameState gameState) {

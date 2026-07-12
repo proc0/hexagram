@@ -77,6 +77,7 @@ void World::updateSigils(Direction dir) {
     // merging only the first sigil in the movement if sigils are the same (i.e. value).
     int maxValueMerged = 0;
     for (auto& sigil : sigils) {
+        // if (sigil.isActive() && !sigil.hasBeenAbsorbed() && !sigil.hasMerged()) {
         if (sigil.isActive()) {
             HexPoint sourceHex = sigil.getHex();
             // update sigil and get a sigil index to merge
@@ -89,33 +90,36 @@ void World::updateSigils(Direction dir) {
             // merge sigils, only head sigil (of chain) merges
             if (mergeIndex > 0) {
                 Sigil& mergeSigil = sigils.at(mergeIndex);
-                // merge source sigil unto target sigil
-                // the underlying sigil "absorbs" this one
-                Effigy mergeEffigy = mergeSigil.getEffigy();
-                Effigy sourceEffigy = sigil.getEffigy();
-                
-                // TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", sourceEffigy.index, sourceEffigy.value, mergeEffigy.index, mergeEffigy.value);
+                // TODO: check if this conditional is needed
+                // if (!mergeSigil.hasMerged() && !mergeSigil.hasBeenAbsorbed()) {               
+                    // merge source sigil unto target sigil
+                    // the underlying sigil "absorbs" this one
+                    Effigy mergeEffigy = mergeSigil.getEffigy();
+                    Effigy sourceEffigy = sigil.getEffigy();
+                    
+                    // TraceLog(LOG_INFO, "Merging %d (%d) and %d (%d)", sourceEffigy.index, sourceEffigy.value, mergeEffigy.index, mergeEffigy.value);
 
-                // create new effigy with the underlying sigil's index and combined values
-                int mergedValue = sourceEffigy.value + mergeEffigy.value;
-                Effigy mergedEffigy = { mergeEffigy.index, mergedValue };
-                maxValueMerged = mergedValue > maxValueMerged ? mergedValue : maxValueMerged;
-                // flag sigil as merged
-                mergeSigil.setMerged(true);
-                mergeSigil.setEffigy(mergedEffigy);
+                    // create new effigy with the underlying sigil's index and combined values
+                    int mergedValue = sourceEffigy.value + mergeEffigy.value;
+                    Effigy mergedEffigy = { mergeEffigy.index, mergedValue };
+                    maxValueMerged = mergedValue > maxValueMerged ? mergedValue : maxValueMerged;
+                    // flag sigil as merged
+                    mergeSigil.setMerged(true);
+                    mergeSigil.setEffigy(mergedEffigy);
 
-                //TODO: do a vector swap with last item to have all disabled at the end
-                // SIGIL + GRID MUTATE
-                // tombstone sigil
-                // sigil.disable();
-                // update sigil position
-                sigil.setPosition(grid.hexPosition(mergeSigil.getHex()));
-                sigil.beginMovement();
-                sigil.setAbsorbed(true);
-                // remove from previous hex
-                grid.vacate(sourceHex);
-                // update grid effigy
-                grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
+                    //TODO: do a vector swap with last item to have all disabled at the end
+                    // SIGIL + GRID MUTATE
+                    // tombstone sigil
+                    // sigil.disable();
+                    // update sigil position
+                    sigil.setPosition(grid.hexPosition(mergeSigil.getHex()));
+                    sigil.beginMovement();
+                    sigil.setAbsorbed(true);
+                    // remove from previous hex
+                    grid.vacate(sourceHex);
+                    // update grid effigy
+                    grid.occupy(mergeSigil.getHex(), mergeSigil.getEffigy());
+                // }
 
             } else if (sourceHex != sigil.getHex()) {
                 // SIGIL + GRID MUTATE
@@ -248,15 +252,15 @@ void World::updateGame(){
 
         if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
             updateSigils(Direction::UP);
-        } else if (IsKeyPressed(KEY_E) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_RIGHT))) {
+        } else if (IsKeyPressed(KEY_E) || IsKeyPressed(KEY_RIGHT)) {
             updateSigils(Direction::UP_RIGHT);
-        } else if (IsKeyPressed(KEY_D) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_RIGHT))) {
+        } else if (IsKeyPressed(KEY_D)) {
             updateSigils(Direction::DOWN_RIGHT);
         } else if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
             updateSigils(Direction::DOWN);
-        } else if (IsKeyPressed(KEY_A) || (IsKeyPressed(KEY_DOWN) && IsKeyPressed(KEY_LEFT))) {
+        } else if (IsKeyPressed(KEY_A)) {
             updateSigils(Direction::DOWN_LEFT);
-        } else if (IsKeyPressed(KEY_Q) || (IsKeyPressed(KEY_UP) && IsKeyPressed(KEY_LEFT))) {
+        } else if (IsKeyPressed(KEY_Q) || IsKeyPressed(KEY_LEFT)) {
             updateSigils(Direction::UP_LEFT);
         }
 
@@ -323,6 +327,22 @@ void World::createSigil(HexPoint hex, int value) {
         grid.occupy(hex, effigy);
         // sigils.at(sigilsSize).log("Creating new sigil.");
     }
+}
+
+bool World::isMoveAvailable() const {
+    for (auto& sigil : sigils) {
+        if (sigil.canMove(grid)) return true;
+    }
+
+    return false;
+}
+
+bool World::isGridLocked() const {
+    return grid.isFull() && !isMoveAvailable();
+}
+
+bool World::isGridFull() const {
+    return grid.isFull();
 }
 
 bool World::isMaxSigilValue(int value) const {

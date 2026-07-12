@@ -7,6 +7,11 @@ void Game::load() {
     loadRaylibLogo();
 }
 
+void Game::restart() {
+    state = State::Game::PLAY;
+    gameState.state = state;
+}
+
 void Game::loadRaylibLogo() {
 
     float raylibLogoX = window.halfWidthf-raylibLogoSize*0.5f;
@@ -27,19 +32,19 @@ void Game::updateRaylibLogo() {
     raylibLogoPos.x += raylibLogoDir.x;
     raylibLogoPos.y += raylibLogoDir.y;
 
-    bool hasBounced = false;
+    // bool hasBounced = false;
     if (raylibLogoPos.x < 0 || raylibLogoPos.x + raylibLogoOuterRec.width > window.width) {
         raylibLogoDir.x *= -1.0f;
-        gameState.raylibLogoBounces++;
-        hasBounced = true;
+        // gameState.raylibLogoBounces++;
+        // hasBounced = true;
     } 
 
     if (raylibLogoPos.y < 0 || raylibLogoPos.y + raylibLogoOuterRec.width > window.height) {
         raylibLogoDir.y *= -1.0f;
-        gameState.raylibLogoBounces++;
-        if (hasBounced) {
-            gameState.raylibLogoCorners++;
-        }
+        // gameState.raylibLogoBounces++;
+        // if (hasBounced) {
+        //     gameState.raylibLogoCorners++;
+        // }
     }
 
     float raylibLogoInnerX = raylibLogoPos.x + raylibLogoBorder;
@@ -54,55 +59,24 @@ void Game::updateRaylibLogo() {
     raylibLogoTextPos = { raylibLogoTextX, raylibLogoTextY };
 }
 
-GameState Game::updateNull(State::App appState, InputEvent inputEvent){
+GameState Game::updateNull(State::App appState, Action::Surface action, InputEvent inputEvent){
     return gameState;
 }
 
-GameState Game::updateMain(State::App appState, InputEvent inputEvent){
+GameState Game::updateMain(State::App appState, Action::Surface action, InputEvent inputEvent){
     return gameState;
 }
 
-GameState Game::updateGame(State::App appState, InputEvent inputEvent){
+GameState Game::updateGame(State::App appState, Action::Surface action, InputEvent inputEvent){
 
-    // toggle pause menu
-    // if(IsKeyPressed(KEY_ESCAPE)){
-    if(appState == State::App::PAUSE) {
-        state = State::Game::HOLD;
-        return gameState;
-    } else if (state == State::Game::HOLD) {
-        state = State::Game::PLAY;
+    if (world.isGridLocked()) {
+        state = State::Game::OVER;
+        gameState.state = state;
     }
-        
-    //     if(state == State::Game::PLAY) {
-    //         state = State::Game::PAUSE;
-    //         ShowCursor();
-    //         return;
-    //     }
-    // }
 
-    // run background stuff and UI to begin
-    // if(state == State::Game::OVER || state == State::Game::END || state == State::Game::START) {
-    //     // listen for play button here
-    //     // display.update(world);
-    //     return;
-    // }
-
-    // if(state == State::Game::PLAY){
-    //     updateRaylibLogo();
-
-    //     if (inputEvent.id == Event::Input::PRIMARY_UP && INTERSECTS(inputEvent.position, raylibLogoOuterRec)) {
-    //         TraceLog(LOG_INFO, "LOGO CLICK");
-    //         gameState.raylibLogoClicks++;
-    //     }
-    // }
-
-    // if(state == State::Game::START){
-    //     // press any key screen (needed to load sound for web, as it needs user input to load audio)
-    //     if(IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT) || GetKeyPressed() != 0){
-    //         state = State::Game::PLAY;
-    //     }
-    //     return gameState;
-    // }
+    if (action == Action::Surface::RESTART_GAME) {
+        restart();
+    }
 
     return gameState;
 }
@@ -125,15 +99,25 @@ void Game::renderGame() const {
     // renderRaylibLogo();
 }
 
+bool Game::isOver() const {
+    return state == State::Game::OVER;
+}
+
 void Game::transition(State::Screen screen) {
     switch(screen) {
         case State::Screen::MAIN:
             update = &Game::updateMain;
             render = &Game::renderMain;
+
+            state = State::Game::START;
+            gameState.state = state;
             break;
         case State::Screen::GAME:
             update = &Game::updateGame;
             render = &Game::renderGame;
+
+            state = State::Game::PLAY;
+            gameState.state = state;
             break;
         default:
             update = &Game::updateNull;

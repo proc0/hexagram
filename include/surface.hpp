@@ -66,6 +66,8 @@ class Surface : public Layer {
     Shader overlayShader;
     Camera Raylib_camera;
     Font fonts[2];
+
+    std::string scoreText;
     // Texture2D profilePicture;
     // Texture2D parchmentTexture;
     // Texture2D monkTexture;

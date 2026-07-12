@@ -3,6 +3,7 @@
 #include "types.hpp"
 #include "defaults.hpp"
 #include "window.hpp"
+#include "world.hpp"
 
 #include <raylib.h>
 
@@ -18,16 +19,21 @@ class Game : public Layer {
     Rectangle raylibLogoInnerRec;
     Vector2 raylibLogoTextPos;
 
-    GameState gameState = GameState{0};
+    GameState gameState = {
+        .state = State::Game::START
+    };
+
     const Window& window;
+    const World& world;
     State::Game state = State::Game::START;
 
 public:
-    Game(const Window& window): window(window) {}
+    Game(const Window& window, const World& world): window(window), world(world) {}
     ~Game() = default;
 
     void load();
     void loadRaylibLogo();
+    void restart();
 
     void renderNull() const;
     void (Game::*render)() const = &Game::renderNull;
@@ -35,12 +41,13 @@ public:
     void renderMain() const;
     void renderRaylibLogo() const;
 
-    GameState updateNull(State::App, InputEvent);
-    GameState (Game::*update)(State::App, InputEvent) = &Game::updateNull;
-    GameState updateMain(State::App, InputEvent);
-    GameState updateGame(State::App, InputEvent);
+    GameState updateNull(State::App, Action::Surface, InputEvent);
+    GameState (Game::*update)(State::App, Action::Surface, InputEvent) = &Game::updateNull;
+    GameState updateMain(State::App, Action::Surface, InputEvent);
+    GameState updateGame(State::App, Action::Surface, InputEvent);
     void updateRaylibLogo();
 
+    bool isOver() const;
     void transition(State::Screen);
     void resize(int height, int width) override;
     void unload();

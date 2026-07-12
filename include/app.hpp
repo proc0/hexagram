@@ -29,10 +29,10 @@ class App : Layer {
     Surface surface = Surface(window);
 
 	World world = World(window);
-    Game game = Game(window);
+    Game game = Game(window, world);
 
 	State::App state = State::App::LOAD;
-    State::Screen screen = State::Screen::INTRO;
+    State::Screen screen = State::Screen::TITLE;
 
 public:
 	App() {};

@@ -40,6 +40,9 @@ public:
     void placeSigil(int index);
     void spawnSigil(int value);
 
+    bool isMoveAvailable() const;
+    bool isGridLocked() const;
+    bool isGridFull() const;
     bool isMaxSigilValue(int value) const;
     void resize(int width, int height) override;
     void transition(State::Screen);

@@ -69,7 +69,8 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 	// TraceLog(LOG_INFO, "Target Neighbor Hex: %d %d %d", targetHex.q, targetHex.r, targetHex.s);
 
 	// if neigbhor returns source hex, sigil cannot move
-	if (targetHex == sourceHex) {
+	// if (targetHex == sourceHex || isMerged || isAbsorbed) {
+	if (targetHex == sourceHex || isMerged || isAbsorbed) {
 		// TraceLog(LOG_INFO, "CANNOT MOVE");
 		return std::make_pair(mergeIndex, chainIndex);
 	}
@@ -89,11 +90,12 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 	// check if next hex after destination has a sigil
 	// if this is a chain move, do not merge
 	if (grid.isOccupied(targetHex) && !isChain) {
+
 		Effigy targetEffigy = grid.getEffigy(targetHex);
 		// if the values are the same send the mergeIndex index to World
 		// if this sigil was already merged into (by another sigil) do not merge
 		// TODO: separate merge logic into its own method
-		if (targetEffigy.value == effigy.value && !isMerged) {			
+		if (targetEffigy.value == effigy.value) {			
 			// TraceLog(LOG_INFO, "Merging values: %d %d", targetEffigy.value, effigy.value);
 			// update hex to new target
 			hex = targetHex;
@@ -117,7 +119,7 @@ std::pair<int, int> Sigil::update(const Grid& grid, Direction dir, bool isChain)
 	HexPoint chainHex = grid.hexNeighbor(sourceHex, oppositeDir(dir));
 	// if the hex behind the current one (before moving)
 	// contains a sigil, return the index to move it
-	if (chainHex != sourceHex && grid.isOccupied(chainHex)) {
+	if (chainHex != sourceHex && grid.isOccupied(chainHex) && chainHex != grid.hexNeighbor(hex, oppositeDir(dir))) {
 		// retrieve effigy to get sigil index to return to World
 		Effigy chainEffigy = grid.getEffigy(chainHex);
 		chainIndex = chainEffigy.index;
@@ -144,7 +146,7 @@ void Sigil::beginMovement() {
 
 void Sigil::updateMovement() {
 	if (state != State::Sigil::MOVING) return;
-	
+
 	if (frameMoveIndex < ANIM_FRAMES.size()) {
 		// float progress = static_cast<float>(ANIM_FRAMES[animPos.index])/MAX_FRAMES;
 		// animPos.current = Vector2Lerp(animPos.source, animPos.target, progress);
@@ -205,6 +207,19 @@ void Sigil::setEffigy(Effigy eff) {
 
 void Sigil::finishMerge() {
 	effigy = nextEffigy;
+}
+
+bool Sigil::canMove(const Grid& grid) const {
+	bool availableMove = false;
+	for (auto& dir : ALL_DIRECTIONS) {
+		if (!grid.isEdge(hex, dir)) {
+			HexPoint neighbor = grid.hexNeighbor(hex, dir);
+			availableMove = !grid.isOccupied(neighbor)
+				|| grid.getEffigy(grid.hexNeighbor(neighbor, dir)).value == effigy.value;
+		}
+	}
+
+	return availableMove;
 }
 
 bool Sigil::isMoving() const {

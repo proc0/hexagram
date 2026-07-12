@@ -56,6 +56,7 @@ public:
 	Effigy getEffigy() const;
 	void setEffigy(Effigy);
 	
+	bool canMove(const Grid&) const;
 	bool isMoving() const;
 	bool isActive() const;
 	void enable();

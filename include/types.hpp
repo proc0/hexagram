@@ -1,6 +1,7 @@
 #pragma once
 
 #include <raylib.h>
+#include <array>
 
 namespace Action {
     enum Surface {
@@ -98,6 +99,15 @@ enum Direction {
   UP_LEFT
 };
 
+static constexpr std::array<Direction, 6> ALL_DIRECTIONS = { 
+    Direction::UP,
+    Direction::UP_RIGHT,
+    Direction::DOWN_RIGHT,
+    Direction::DOWN,
+    Direction::DOWN_LEFT,
+    Direction::UP_LEFT
+};
+
 static inline Direction oppositeDir(Direction dir) {
     Direction result = dir;
 
@@ -133,9 +143,7 @@ typedef struct InputEvent {
 } InputEvent;
 
 typedef struct GameState {
-    int raylibLogoClicks;
-    int raylibLogoBounces;
-    int raylibLogoCorners;
+    State::Game state;
 } GameState;
 
 // typedef struct TimerEvent {

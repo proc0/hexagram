@@ -60,11 +60,11 @@ void App::renderLogo() const {
 }
 
 void App::renderTitle() const {
-    const char* gameTitle = "GAME TITLE";
-    int titleFontSize = 128;
+    const char* gameTitle = "Hex\nMerge";
+    int titleFontSize = 112;
     float titleSize = MeasureText(gameTitle, titleFontSize);
     int titleX = window.halfWidth - titleSize/2;
-    int titleY = window.halfHeight - titleFontSize/2;
+    int titleY = window.halfHeight - titleFontSize*2;
 
     const char* subtitle = "Press any key";
     int subtitleFontSize = 32;
@@ -84,17 +84,19 @@ void App::intro(void* self) {
 }
 
 void App::runIntro() {
-    (timer.*timer.update)();
+    // (timer.*timer.update)();
 
     window.update({ .id = Event::Input::IDLE, .position = Vector2({}) });
     
-    if (screen == State::Screen::INTRO) {
-        if(input.updateAnyKey() || timer.isEmpty()) {
-            screen = State::Screen::TITLE;
-        }
+    // if (screen == State::Screen::INTRO) {
+    //     if(input.updateAnyKey() || timer.isEmpty()) {
+    //         screen = State::Screen::TITLE;
+    //     }
 
-        renderLogo();
-    } else if (screen == State::Screen::TITLE) {
+    //     renderLogo();
+    // } else 
+
+    if (screen == State::Screen::TITLE) {
         renderTitle();
 
         if(input.updateAnyKey()) {
@@ -198,7 +200,7 @@ Clay_RenderCommandArray App::update() {
 
                 surface.transition(state, screen);
             }
-        } else if (state == State::App::PAUSE) {
+        } else if (state == State::App::PAUSE || game.isOver()) {
 
             if (surfaceAction == Action::Surface::RESUME_GAME) {
                 TraceLog(LOG_INFO, "UNPAUSE");
@@ -210,7 +212,8 @@ Clay_RenderCommandArray App::update() {
                 TraceLog(LOG_INFO, "RESTART");
                 state = State::App::RUN;
                 
-                world.restart();         
+                world.restart();
+                game.restart();         
                 surface.transition(state, screen);          
             
             } else if (surfaceAction == Action::Surface::MAIN_MENU) {
@@ -251,9 +254,9 @@ Clay_RenderCommandArray App::update() {
     }
 
     Clay_BeginLayout();
-	// GameState gameState = (game.*game.update)(state, inputEvent);
+	GameState gameState = (game.*game.update)(state, surfaceAction, inputEvent);
 	(world.*world.update)();
-    // (surface.*surface.display)(gameState);
+    (surface.*surface.display)(gameState);
     (surface.*surface.menu)();
     Clay_RenderCommandArray renderCommands = Clay_EndLayout(GetFrameTime());
 
