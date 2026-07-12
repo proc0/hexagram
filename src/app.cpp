@@ -135,7 +135,7 @@ void App::render(Clay_RenderCommandArray& renderCommands) const {
 
         (surface.*surface.render)(renderCommands);
 
-        DrawFPS(50, 50);
+        // DrawFPS(50, 50);
 	EndDrawing();
 }
 

@@ -84,7 +84,8 @@ namespace State {
 
     enum World {
         WAITING,
-        ANIMATING
+        ANIMATING,
+        GRIDLOCK
     };
 }
 

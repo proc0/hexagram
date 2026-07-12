@@ -33,6 +33,8 @@ void World::load(){
 }
 
 void World::restart() {
+    state = State::World::WAITING;
+
     for (auto& sigil : sigils) {
         sigil.disable();
     }
@@ -49,7 +51,7 @@ void World::renderMain() const {
 }
 
 void World::renderGame() const {
-    DrawRectangleGradientV(0, 0, window.width, window.height, BLUE, GREEN);
+    DrawRectangleGradientV(0, 0, window.width, window.height, phaseColor1, phaseColor2);
     grid.render();
 
     for (auto& sigil : sigils) {
@@ -165,23 +167,10 @@ void World::updateSigils(Direction dir) {
 
     // TraceLog(LOG_INFO, "======= END SIGIL UPDATE =======");
 
-    if (isMaxSigilValue(maxValueMerged)) {
+    if (isMaxSigilValue(maxValueMerged) && maxSigilValue != maxValueMerged) {
         maxSigilValue = maxValueMerged;
-        // if (maxSigilValue < 16) {
-        //     // only spawn sigils below 32
-        //     // int maxSigils = sigilChance.size();
-        //     // TODO: weigh each sigil by its value (2 is more freq, 64 less)
-        //     sigilChance[maxSigilValue] = 1.0f/maxSigilValue;
-
-        //     int cursor = 0;
-        //     for (auto& [key, val] : sigilChance) {
-        //         int chance = static_cast<int>(floor(val*sigilHat.size()));
-        //         for (int i = cursor; i < chance && i < sigilHat.size(); ++i) {
-        //             sigilHat[i] = key;
-        //         }
-        //         cursor = chance;
-        //     }
-        // }
+        TraceLog(LOG_INFO, "MAX SIGIL IS: %d", maxSigilValue);
+        changePhase();
     }
 
     state = State::World::ANIMATING;
@@ -215,33 +204,27 @@ void World::updateGame(){
                 }
             }
 
-            // TODO: when grid is full check all possible merges before ending game
-            if (!grid.isFull()) {
-                // TODO: spawn at random empty hex location
-                // TraceLog(LOG_INFO, "Spawning a new sigil");
-                
-                int nextValue = 2;
-                int sigProb = 0;
-                switch(maxSigilValue) {
-                    case 16:
-                        sigProb = GetRandomValue(0, 1);
-                        nextValue = sigProb ? 2 : 4;
-                        break;
-                    case 128:
-                        sigProb = GetRandomValue(0, 4);
-                        if (sigProb == 2) {
-                            nextValue = 4;
-                        } else if (sigProb == 3) {
-                            nextValue = 8;
-                        } else {
-                            nextValue = 2;
-                        }
-                        break;
-                    default:
-                        nextValue = 2;
+            if (grid.isFull()) {
+                TraceLog(LOG_INFO, "GRID IS FULL");
+                if (!isMoveAvailable()) {
+                    TraceLog(LOG_INFO, "GRID IS LOCKED");
+                    state = State::World::GRIDLOCK;
                 }
+            } else {
 
-                spawnSigil(nextValue);
+                switch(maxSigilValue) {
+                case 64:
+                    spawnSigil(getRandomSigilValue());
+                    spawnSigil(getRandomSigilValue());
+                    break;
+                case 1024:
+                    spawnSigil(getRandomSigilValue());
+                    spawnSigil(getRandomSigilValue());
+                    spawnSigil(getRandomSigilValue());
+                    break;
+                default:
+                    spawnSigil(getRandomSigilValue());
+                }
             }
 
             state = State::World::WAITING;
@@ -284,13 +267,13 @@ void World::placeSigil(int index) {
 
 void World::spawnSigil(int value) {
     // TODO: better algo for finding empty hexes on grid
-    HexPoint spawnPoint = HexPoint(0, 0, 0);
+    // HexPoint spawnPoint = grid.hexFindFirstEmpty();
 
-    if (grid.isOccupied(spawnPoint)) {
-        spawnPoint = grid.hexFindFirstEmpty();
-    }
+    // if (grid.isOccupied(spawnPoint)) {
+    //     spawnPoint = grid.hexFindFirstEmpty();
+    // }
 
-    createSigil(spawnPoint, value);
+    createSigil(grid.hexFindFirstEmpty(), value);
 }
 
 void World::createSigil(HexPoint hex, int value) {
@@ -302,7 +285,7 @@ void World::createSigil(HexPoint hex, int value) {
     // find disabled sigils if size 
     // is greater than total hexes
     int sigilsSize = sigils.size();
-    if (sigilsSize >= grid.getTotalHexes()) {
+    if (sigilsSize > grid.getTotalHexes()) {
         // WARNING: do not use ANCHOR sigil at 0!
         // iterate backwards to get the most likely disabled?
         for (int i = 1; i < sigils.size(); ++i) {
@@ -317,7 +300,7 @@ void World::createSigil(HexPoint hex, int value) {
                 // sigil.setPosition(grid.hexPosition(hex));
                 sigil.reset(hex, effigy, grid.hexPosition(hex));
                 grid.occupy(hex, effigy);
-                // sigil.log("Reusing existing sigil.");
+                sigil.log("Reusing existing sigil.");
                 break;
             }
         }
@@ -325,8 +308,70 @@ void World::createSigil(HexPoint hex, int value) {
         Effigy effigy = Effigy(sigilsSize, value);
         sigils.emplace_back(hex, effigy, grid.hexPosition(hex));
         grid.occupy(hex, effigy);
-        // sigils.at(sigilsSize).log("Creating new sigil.");
+        sigils.at(sigilsSize).log("Creating new sigil.");
     }
+}
+
+void World::changePhase() {
+    switch(maxSigilValue) {
+        case 32:
+            phaseColor1 = BLUE;
+            phaseColor2 = GREEN;
+            break;
+        case 128:
+            phaseColor1 = GREEN;
+            phaseColor2 = BROWN;
+            break;
+        case 512:
+            phaseColor1 = BROWN;
+            phaseColor2 = GRAY;
+            break;
+        case 1024:
+            phaseColor1 = BLACK;
+            phaseColor2 = RED;
+            break;
+        default:
+            return;
+    }
+}
+
+int World::getRandomSigilValue() const {
+    int nextValue = 2;
+    int sigProb = 0;
+    switch(maxSigilValue) {
+        case 32:
+            sigProb = GetRandomValue(0, 4);
+            if (sigProb == 4) {
+                nextValue = 4;
+            } else {
+                nextValue = 2;
+            }
+            break;
+        case 128:
+            sigProb = GetRandomValue(0, 6);
+            if (sigProb == 6) {
+                nextValue = 8;
+            } else if (sigProb == 4 || sigProb == 5) {
+                nextValue = 4;
+            } else {
+                nextValue = 2;
+            }
+            break;
+        case 512:
+            sigProb = GetRandomValue(0, 6);
+            if (sigProb == 6 || sigProb == 5) {
+                nextValue = 8;
+            } else if (sigProb == 4 || sigProb == 3) {
+                nextValue = 4;
+            } else {
+                nextValue = 2;
+            }
+            break;
+        default:
+            nextValue = 2;
+    }
+
+    return nextValue;
 }
 
 bool World::isMoveAvailable() const {
@@ -346,13 +391,15 @@ bool World::isGridFull() const {
 }
 
 bool World::isMaxSigilValue(int value) const {
+    bool isMax = true;
     for (auto& sigil : sigils) {
-        if (value > sigil.getEffigy().value) {
-            return true;
+        if (value < sigil.getEffigy().value) {
+            isMax = false;
+            break;
         }
     }
 
-    return false;
+    return isMax;
 }
 
 void World::transition(State::Screen screen) {

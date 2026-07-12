@@ -633,7 +633,7 @@ void Surface::menuPause() {
 
             buttonSimple(CLAY_ID("ButtonGameResume"), CLAY_STRING("Resume Game"));
             buttonSimple(CLAY_ID("ButtonGameRestart"), CLAY_STRING("Restart Game"));
-            buttonSimple(CLAY_ID("ButtonMainMenu"), CLAY_STRING("Main Menu"));
+            // buttonSimple(CLAY_ID("ButtonMainMenu"), CLAY_STRING("Main Menu"));
             buttonSimple(CLAY_ID("ButtonQuit"), CLAY_STRING("Quit"));
         }
     }

@@ -4,13 +4,12 @@
 #include "types.hpp"
 #include "grid.hpp"
 #include "sigil.hpp"
-// #include <unordered_map>
-// #include <array>
 
 class World : public Layer {
     std::vector<Sigil> sigils;
-    // std::unordered_map<int, float> sigilChance = { { 2, 1.0f } };
-    // std::array<int, 20> sigilHat{};
+
+    Color phaseColor1 = RAYWHITE;
+    Color phaseColor2 = BLUE;
 
     const Window& window;
     Grid grid = Grid(window);
@@ -39,6 +38,9 @@ public:
     void createSigil(HexPoint, int value);
     void placeSigil(int index);
     void spawnSigil(int value);
+    void changePhase();
+    
+    int getRandomSigilValue() const;
 
     bool isMoveAvailable() const;
     bool isGridLocked() const;

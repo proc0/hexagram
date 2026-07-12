@@ -84,7 +84,7 @@ public:
     const std::unordered_map<std::string, Action::Surface> buttonActions = {
         { "ButtonGameNew", Action::Surface::NEW_GAME },
         { "ButtonGameResume", Action::Surface::RESUME_GAME },
-        { "ButtonMainMenu", Action::Surface::MAIN_MENU },
+        // { "ButtonMainMenu", Action::Surface::MAIN_MENU },
         { "ButtonGameRestart", Action::Surface::RESTART_GAME },
         { "ButtonConfirm", Action::Surface::CONFIRM_RETURN_MAIN },
         { "ButtonCancel", Action::Surface::CANCEL_RETURN_MAIN },

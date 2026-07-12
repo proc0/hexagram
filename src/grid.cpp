@@ -155,7 +155,7 @@ Vector2 Grid::hexPosition(HexPoint p) const {
 }
 
 HexPoint Grid::hexFindFirstEmpty() const {
-	HexPoint result = HexPoint(0, 0, 0);
+	HexPoint result = HexPoint(-1, -1, -1);
 
 	for (auto& [hex, state] : map) {
 		if (!state.isOccupied) {
@@ -213,15 +213,13 @@ void Grid::clear() {
 }
 
 bool Grid::isFull() const {
-	bool hasEmpty = false;
 	for (auto& [hex, state] : map) {
 		if (!state.isOccupied) {
-			hasEmpty = true;
-			break;
+			return false;
 		}
 	}
 
-	return !hasEmpty;
+	return true;
 }
 
 bool Grid::isOccupied(HexPoint hex) const {
