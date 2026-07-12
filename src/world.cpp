@@ -272,6 +272,10 @@ void World::updateGame(Action::Surface action){
         // }
     }
 
+    for (auto& sigil : sigils) {
+        sigil.updateEffect();
+    }
+
     // if (phaseColorLerp >= 1.0f && !phaseColorLerpSwitch) {
     //     phaseColorLerp -= 0.01f;
     //     phaseColorLerpSwitch = phaseColorLerp < 0.5f;
@@ -339,6 +343,7 @@ void World::createSigil(HexPoint hex, int value) {
         // and call resize every time. Should Sigil be a Layer and 
         // have its own resize?
         sigils.back().resize(window.unit);
+        sigils.back().beginEffect(Kind::SigilEffect::SPAWN);
         grid.occupy(hex, effigy);
         // sigils.at(sigilsSize).log("Creating new sigil.");
     }

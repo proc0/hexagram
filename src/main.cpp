@@ -22,12 +22,10 @@ int main(void){
 // DONE: add title screen and remove initial logo
 // DONE: test Web build
 // DONE: add better spawn sigil algo
+// DONE: add controllers
+// DONE: add merge effects
+// DONE: add spawn effects
 
-// WORK: add controllers
-
-// TODO: add merge effects
-// TODO: add spawn effects
 // TODO: add basic sounds
-// TODO: add how-to-play modal screen on main menu
 // TODO: add credits button on main menu
 

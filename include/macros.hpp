@@ -147,6 +147,19 @@ static inline int sumCount(int n) {
 // static constexpr int MAX_FRAMES = 30;
 // static constexpr auto ANIM_FRAMES = generate_frames<MAX_FRAMES>();
 
-// static constexpr std::array<float, 60> ANIM_FRAMES = { 0.000019f, 0.00015f, 0.00050f, 0.0012f, 0.0023f, 0.0040f, 0.0064f, 0.0095f, 0.013f, 0.019f, 0.025f, 0.032f, 0.041f, 0.051f, 0.063f, 0.076f, 0.091f, 0.11f, 0.13f, 0.15f, 0.17f, 0.20f, 0.23f, 0.26f, 0.29f, 0.33f, 0.36f, 0.41f, 0.45f, 0.50f, 0.55f, 0.59f, 0.64f, 0.67f, 0.71f, 0.74f, 0.77f, 0.80f, 0.83f, 0.85f, 0.87f, 0.89f, 0.91f, 0.92f, 0.94f, 0.95f, 0.96f, 0.97f, 0.98f, 0.98f, 0.99f, 0.99f, 0.99f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
+// JS example of getting ease out functions
+// function easeOutCubic(x) {
+// return 1 - Math.pow(1 - x, 3);
+// }
+// undefined
+// var c  = [];
+// undefined
+// for (let i = 1; i < 43; i++) { c.push(1/easeOutCubic(i)) }
+// 42
+// c.reduce((mem, val) => { return `${mem} ${val.toPrecision(2)}f`; })
+
+static constexpr std::array<float, 60> ANIM_EASE_IN_OUT_60 = { 0.000019f, 0.00015f, 0.00050f, 0.0012f, 0.0023f, 0.0040f, 0.0064f, 0.0095f, 0.013f, 0.019f, 0.025f, 0.032f, 0.041f, 0.051f, 0.063f, 0.076f, 0.091f, 0.11f, 0.13f, 0.15f, 0.17f, 0.20f, 0.23f, 0.26f, 0.29f, 0.33f, 0.36f, 0.41f, 0.45f, 0.50f, 0.55f, 0.59f, 0.64f, 0.67f, 0.71f, 0.74f, 0.77f, 0.80f, 0.83f, 0.85f, 0.87f, 0.89f, 0.91f, 0.92f, 0.94f, 0.95f, 0.96f, 0.97f, 0.98f, 0.98f, 0.99f, 0.99f, 0.99f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+
+static constexpr std::array<float, 42> ANIM_EASE_OUT_QUAD = { 1.0f, 0.50f, 0.11f, 0.036f, 0.015f, 0.0079f, 0.0046f, 0.0029f, 0.0019f, 0.0014f, 0.0010f, 0.00075f, 0.00058f, 0.00045f, 0.00036f, 0.00030f, 0.00024f, 0.00020f, 0.00017f, 0.00015f, 0.00012f, 0.00011f, 0.000094f, 0.000082f, 0.000072f, 0.000064f, 0.000057f, 0.000051f, 0.000046f, 0.000041f, 0.000037f, 0.000034f, 0.000031f, 0.000028f, 0.000025f, 0.000023f, 0.000021f, 0.000020f, 0.000018f, 0.000017f, 0.000016f, 0.000015f };
 static constexpr std::array<float, 42> ANIM_FRAMES = { 0.000054f, 0.00043f, 0.0015f, 0.0035f, 0.0067f, 0.012f, 0.019f, 0.028f, 0.039f, 0.054f, 0.072f, 0.093f, 0.12f, 0.15f, 0.18f, 0.22f, 0.27f, 0.31f, 0.37f, 0.43f, 0.50f, 0.57f, 0.63f, 0.69f, 0.73f, 0.78f, 0.82f, 0.85f, 0.88f, 0.91f, 0.93f, 0.95f, 0.96f, 0.97f, 0.98f, 0.99f, 0.99f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };

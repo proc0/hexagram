@@ -85,13 +85,22 @@ namespace State {
 
     enum Sigil {
         STILL,
-        MOVING
+        MOVING,
+        EFFECT
     };
 
     enum World {
         WAITING,
         ANIMATING,
         GRIDLOCK
+    };
+}
+
+namespace Kind {
+    enum SigilEffect {
+        NORMAL,
+        MERGE,
+        SPAWN
     };
 }
 

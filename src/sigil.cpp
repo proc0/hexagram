@@ -19,6 +19,7 @@ void Sigil::reset(HexPoint point, Effigy eff, Vector2 pos) {
 	frameMoveIndex = 0;
 	state = State::Sigil::STILL;
 	bgColor = getColor();
+	beginEffect(Kind::SigilEffect::SPAWN);
 }
 
 // TODO: memoize this in a member var
@@ -170,6 +171,46 @@ void Sigil::updateMovement() {
 	}
 }
 
+void Sigil::beginEffect(Kind::SigilEffect kind) {
+	effectState = State::Sigil::EFFECT;
+	currentEffect = kind;
+
+	if (kind == Kind::SigilEffect::SPAWN) {		
+		frameEffectIndex = 0;
+		currentBgColor = bgColor;
+	} else if (kind == Kind::SigilEffect::MERGE) {		
+		frameEffectIndex = 0;
+		currentSigilSize = sigilSize;
+	}
+}
+
+void Sigil::updateEffect() {
+	if (effectState != State::Sigil::EFFECT) return;
+
+	if (currentEffect == Kind::SigilEffect::SPAWN) {
+
+		if (frameEffectIndex < ANIM_EASE_OUT_QUAD.size()) {
+			Color targetColor = ColorLerp(currentBgColor, WHITE, 0.8f);
+			bgColor = ColorLerp(currentBgColor, targetColor, ANIM_EASE_OUT_QUAD[frameEffectIndex]);
+			frameEffectIndex++;
+		} else {
+			effectState = State::Sigil::STILL;
+			currentEffect = Kind::SigilEffect::NORMAL;
+			bgColor = currentBgColor;
+		}
+	} else if (currentEffect == Kind::SigilEffect::MERGE) {
+		if (frameEffectIndex < ANIM_EASE_OUT_QUAD.size()) {
+			float targetSize = currentSigilSize*1.2f;
+			sigilSize = Lerp(currentSigilSize, targetSize, ANIM_EASE_OUT_QUAD[frameEffectIndex]);
+			frameEffectIndex++;
+		} else {
+			effectState = State::Sigil::STILL;
+			currentEffect = Kind::SigilEffect::NORMAL;
+			sigilSize = currentSigilSize;
+		}
+	}
+}
+
 void Sigil::setAbsorbed(bool absorbed) {
 	isAbsorbed = absorbed;
 }
@@ -222,6 +263,7 @@ void Sigil::setEffigy(Effigy eff) {
 void Sigil::finishMerge() {
 	effigy = nextEffigy;
 	bgColor = getColor();
+	beginEffect(Kind::SigilEffect::MERGE);
 }
 
 bool Sigil::canMove(const Grid& grid) const {
