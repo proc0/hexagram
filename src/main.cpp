@@ -21,13 +21,13 @@ int main(void){
 // DONE: update sigil colors
 // DONE: add title screen and remove initial logo
 // DONE: test Web build
+// DONE: add better spawn sigil algo
 
-// WORK: add better spawn sigil algo
 // WORK: add controllers
 
-// TODO: add how-to-play modal screen on main menu
-// TODO: add credits button on main menu
 // TODO: add merge effects
 // TODO: add spawn effects
 // TODO: add basic sounds
+// TODO: add how-to-play modal screen on main menu
+// TODO: add credits button on main menu
 
