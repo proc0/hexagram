@@ -85,6 +85,8 @@ public:
     Vector2 hexPosition(HexPoint) const;
 
     HexPoint hexFindFirstEmpty() const;
+    HexPoint hexFindCenterEmpty() const;
+    HexPoint hexFindRandomEmpty() const;
     void occupy(HexPoint, Effigy);
     void vacate(HexPoint);
     Effigy getEffigy(HexPoint) const;

@@ -66,18 +66,36 @@ void App::renderTitle() const {
     int titleX = window.halfWidth - titleSize/2;
     int titleY = window.halfHeight - titleFontSize*2;
 
-    const char* subtitle = "Press any key";
-    int subtitleFontSize = 32;
-    float subtitleSize = MeasureText(subtitle, subtitleFontSize);
-    int subtitleX = window.halfWidth - subtitleSize/2;
-    int subtitleY = static_cast<int>(window.height - window.height*0.25f - subtitleFontSize*0.5f);
+    const char* subtitle = "2048";
+    int subtitleFontSize = 80;
+    // float subtitleSize = MeasureText(subtitle, subtitleFontSize);
+    int subtitleX = window.halfWidth - titleSize/2;
+    int subtitleY = titleY+180.0f*window.unit;
+
+    const char* hintText = "Press any key";
+    int hintTextFontSize = 32;
+    float hintTextSize = MeasureText(hintText, hintTextFontSize);
+    int hintTextX = window.halfWidth - hintTextSize/2;
+    int hintTextY = static_cast<int>(window.height - window.height*0.25f - hintTextFontSize*0.5f);
 
     BeginDrawing();
         // ClearBackground(BLANK);
         DrawRectangleGradientV(0, 0, window.width, window.height, bgColor1, bgColor2);
 
+        DrawPoly({ window.halfWidthf-80.0f*window.unit, window.halfHeightf-120.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, BLACK);
+        DrawPolyLines({ window.halfWidthf-80.0f*window.unit, window.halfHeightf-120.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, GREEN);
+        DrawPolyLines({ window.halfWidthf-60.0f*window.unit, window.halfHeightf-100.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, GREEN);
+        DrawPolyLines({ window.halfWidthf-40.0f*window.unit, window.halfHeightf-80.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, GREEN);
+        DrawPolyLines({ window.halfWidthf-20.0f*window.unit, window.halfHeightf-60.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, GREEN);
+        DrawPolyLines({ window.halfWidthf, window.halfHeightf-40.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, GREEN);
+        DrawPolyLines({ window.halfWidthf+20.0f*window.unit, window.halfHeightf-20.0f*window.unit }, 6, 80.0f*window.unit, 0.0f, GREEN);
+        DrawPoly({ window.halfWidthf+40.0f*window.unit, window.halfHeightf }, 6, 80.0f*window.unit, 0.0f, BLACK);
+        DrawPolyLines({ window.halfWidthf+40.0f*window.unit, window.halfHeightf }, 6, 80.0f*window.unit, 0.0f, GREEN);
+
+        // DrawPoly({ window.halfWidthf, window.halfWidthf }, 6, 200.0f*window.unit, 0.0f, BLANK);
         DrawText(gameTitle, titleX, titleY, titleFontSize, RAYWHITE);
         DrawText(subtitle, subtitleX, subtitleY, subtitleFontSize, RAYWHITE);
+        DrawText(hintText, hintTextX, hintTextY, hintTextFontSize, RAYWHITE);
     EndDrawing();
 }
 

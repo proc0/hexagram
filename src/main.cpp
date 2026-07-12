@@ -19,12 +19,11 @@ int main(void){
 // DONE: add winning screen
 // DONE: Add better backgrounds on main menu, title and game screen
 // DONE: update sigil colors
+// DONE: add title screen and remove initial logo
+// DONE: test Web build
 
-// WORK: add title screen and remove initial logo
 // WORK: add better spawn sigil algo
-
-// TODO: add controllers
-// TODO: test Web build
+// WORK: add controllers
 
 // TODO: add how-to-play modal screen on main menu
 // TODO: add credits button on main menu

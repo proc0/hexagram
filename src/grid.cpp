@@ -204,6 +204,58 @@ HexPoint Grid::hexFindFirstEmpty() const {
 	return result;
 }
 
+HexPoint Grid::hexFindCenterEmpty() const {
+	HexPoint result = HexPoint(-1, -1, -1);
+
+	for (auto& [hex, state] : map) {
+		if (abs(hex.q) + abs(hex.r) + abs(hex.s) <= 3 && !state.isOccupied) {
+			result = hex;
+			break;
+		}
+	}
+
+	if (result.q == -1 && result.r == -1 && result.s == -1) {
+		result = hexFindFirstEmpty();
+	}
+
+	return result;
+}
+
+HexPoint Grid::hexFindRandomEmpty() const {
+	HexPoint result = HexPoint(-1, -1, -1);
+	int hq = GetRandomValue(-3, 3);
+	int hr = GetRandomValue(-3, 3);
+	int hs = -hq - hr;
+
+	HexPoint candidate = HexPoint(hq, hr, hs);
+	bool isOccupied = true;
+	bool verified = false;
+	if (isValid(candidate)) {
+		isOccupied = map.at(candidate).isOccupied;
+	}
+	int maxRetry = 15;
+	while (maxRetry > 0 && isOccupied) {
+		int hq = GetRandomValue(-3, 3);
+		int hr = GetRandomValue(-3, 3);
+		int hs = -hq - hr;
+		
+		candidate = HexPoint(hq, hr, hs);
+		if (isValid(candidate)) {
+			isOccupied = map.at(candidate).isOccupied;
+			verified = !isOccupied;
+		}
+		maxRetry--;
+	}
+
+	if (verified) { 
+		result = candidate;
+	} else {
+		result = hexFindCenterEmpty();
+	}
+
+	return result;
+}
+
 bool Grid::isEdge(HexPoint hex, Direction dir) const {
 	bool result = false;
 

@@ -187,6 +187,7 @@ void World::updateSigils(Direction dir) {
 }
 
 void World::updateGame(){
+    if (state == State::World::GRIDLOCK) return;
 
     grid.update();
 
@@ -219,20 +220,18 @@ void World::updateGame(){
                 if (!isMoveAvailable()) {
                     TraceLog(LOG_INFO, "GRID IS LOCKED");
                     state = State::World::GRIDLOCK;
+                    return;
                 }
             } else {
 
-                switch(maxSigilValue) {
-                case 64:
-                    spawnSigil(getRandomSigilValue());
-                    spawnSigil(getRandomSigilValue());
-                    break;
-                case 1024:
+                if (maxSigilValue > 1024) {
                     spawnSigil(getRandomSigilValue());
                     spawnSigil(getRandomSigilValue());
                     spawnSigil(getRandomSigilValue());
-                    break;
-                default:
+                } else if (maxSigilValue > 512) {
+                    spawnSigil(getRandomSigilValue());
+                    spawnSigil(getRandomSigilValue());
+                } else {
                     spawnSigil(getRandomSigilValue());
                 }
 
@@ -304,7 +303,7 @@ void World::spawnSigil(int value) {
     //     spawnPoint = grid.hexFindFirstEmpty();
     // }
 
-    createSigil(grid.hexFindFirstEmpty(), value);
+    createSigil(grid.hexFindRandomEmpty(), value);
 }
 
 void World::createSigil(HexPoint hex, int value) {
@@ -390,7 +389,7 @@ int World::getRandomSigilValue() const {
             sigProb = GetRandomValue(0, 6);
             if (sigProb == 6) {
                 nextValue = 8;
-            } else if (sigProb == 4 || sigProb == 5) {
+            } else if (sigProb == 3 || sigProb == 4 || sigProb == 5) {
                 nextValue = 4;
             } else {
                 nextValue = 2;
@@ -398,9 +397,11 @@ int World::getRandomSigilValue() const {
             break;
         case 512:
             sigProb = GetRandomValue(0, 6);
-            if (sigProb == 6 || sigProb == 5) {
+            if (sigProb == 6) {
+                nextValue = 16;
+            } else if (sigProb == 5 || sigProb == 4) {
                 nextValue = 8;
-            } else if (sigProb == 4 || sigProb == 3) {
+            } else if (sigProb == 3 || sigProb == 2) {
                 nextValue = 4;
             } else {
                 nextValue = 2;
@@ -430,7 +431,7 @@ bool World::isMoveAvailable() const {
 }
 
 bool World::isGridLocked() const {
-    return grid.isFull() && !isMoveAvailable();
+    return state == State::World::GRIDLOCK;
 }
 
 bool World::isGridFull() const {

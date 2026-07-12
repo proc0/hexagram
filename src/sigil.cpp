@@ -229,8 +229,10 @@ bool Sigil::canMove(const Grid& grid) const {
 	for (auto& dir : ALL_DIRECTIONS) {
 		if (!grid.isEdge(hex, dir)) {
 			HexPoint neighbor = grid.hexNeighbor(hex, dir);
-			availableMove = hex != neighbor && (!grid.isOccupied(neighbor)
-							|| grid.getEffigy(neighbor).value == effigy.value);
+			if (hex != neighbor && (!grid.isOccupied(neighbor) || grid.getEffigy(neighbor).value == effigy.value)) {
+				availableMove = true;
+				break;
+			}
 		}
 	}
 
