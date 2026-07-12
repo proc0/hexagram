@@ -71,8 +71,11 @@ void App::renderTitle() const {
     float subtitleSize = MeasureText(subtitle, subtitleFontSize);
     int subtitleX = window.halfWidth - subtitleSize/2;
     int subtitleY = static_cast<int>(window.height - window.height*0.25f - subtitleFontSize*0.5f);
+
     BeginDrawing();
-        ClearBackground(BLANK);
+        // ClearBackground(BLANK);
+        DrawRectangleGradientV(0, 0, window.width, window.height, bgColor1, bgColor2);
+
         DrawText(gameTitle, titleX, titleY, titleFontSize, RAYWHITE);
         DrawText(subtitle, subtitleX, subtitleY, subtitleFontSize, RAYWHITE);
     EndDrawing();
@@ -97,6 +100,15 @@ void App::runIntro() {
     // } else 
 
     if (screen == State::Screen::TITLE) {
+
+        if (titleScreenBGLerp >= 1.0f) {
+            titleScreenBGLerp -= 0.001f;
+        } else {
+            titleScreenBGLerp += 0.001f;
+        }
+        bgColor1 = ColorLerp(GRAY, BLACK, titleScreenBGLerp);
+        bgColor2 = ColorLerp(ORANGE, RED, titleScreenBGLerp);
+        
         renderTitle();
 
         if(input.updateAnyKey()) {

@@ -66,8 +66,8 @@ namespace State {
         START,
         PLAY,
         HOLD,
-        OVER,
-        FINISH
+        WIN,
+        OVER
     };
 
     enum Pointer {
@@ -145,6 +145,7 @@ typedef struct InputEvent {
 
 typedef struct GameState {
     State::Game state;
+    int score;
 } GameState;
 
 // typedef struct TimerEvent {

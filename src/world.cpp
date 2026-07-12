@@ -2,6 +2,7 @@
 
 #include "raylib.h"
 #include "types.hpp"
+// #include <cmath>
 
 void World::load(){
     // std::string pathAssets = DIR_ASSETS;
@@ -39,6 +40,10 @@ void World::restart() {
         sigil.disable();
     }
     grid.clear();
+    grid.reset();
+
+    maxSigilValue = 2;
+    phaseChange();
     createSigil(HexPoint(0, 0, 0), 2);
 }
 
@@ -47,7 +52,8 @@ void World::renderUnit() const {
 }
 
 void World::renderMain() const {
-    DrawRectangleGradientH(0, 0, window.width, window.height, GREEN, PINK);
+    DrawRectangleGradientV(0, 0, window.width, window.height, phaseColor1, phaseColor2);
+    grid.render();
 }
 
 void World::renderGame() const {
@@ -105,6 +111,7 @@ void World::updateSigils(Direction dir) {
                     int mergedValue = sourceEffigy.value + mergeEffigy.value;
                     Effigy mergedEffigy = { mergeEffigy.index, mergedValue };
                     maxValueMerged = mergedValue > maxValueMerged ? mergedValue : maxValueMerged;
+                    score += mergedValue;
                     // flag sigil as merged
                     mergeSigil.setMerged(true);
                     mergeSigil.setEffigy(mergedEffigy);
@@ -170,7 +177,7 @@ void World::updateSigils(Direction dir) {
     if (isMaxSigilValue(maxValueMerged) && maxSigilValue != maxValueMerged) {
         maxSigilValue = maxValueMerged;
         TraceLog(LOG_INFO, "MAX SIGIL IS: %d", maxSigilValue);
-        changePhase();
+        phaseChangeEvent = true;
     }
 
     state = State::World::ANIMATING;
@@ -225,6 +232,12 @@ void World::updateGame(){
                 default:
                     spawnSigil(getRandomSigilValue());
                 }
+
+                if (phaseChangeEvent) {
+                    phaseChange();
+                    grid.phaseChange(maxSigilValue);
+                    phaseChangeEvent = false;
+                }
             }
 
             state = State::World::WAITING;
@@ -258,6 +271,21 @@ void World::updateGame(){
         //     TraceLog(LOG_INFO, frameText);
         // }
     }
+
+    // if (phaseColorLerp >= 1.0f && !phaseColorLerpSwitch) {
+    //     phaseColorLerp -= 0.01f;
+    //     phaseColorLerpSwitch = phaseColorLerp < 0.5f;
+    // } else {
+    //     phaseColorLerp += 0.01f;
+    //     phaseColorLerpSwitch = phaseColorLerp < 1.0f;
+    // }
+
+    // phaseColorLerp += 0.01f;
+    // if (phaseColorLerp >= 1.0f) {
+    //     phaseColorLerp = 0.5f;
+    // }
+    // // TraceLog(LOG_INFO, "%f", sinf(phaseColorLerp));
+    // phaseColor2 = ColorLerp(phaseColor2, phaseColor1, 1.0f-phaseColorLerp);
 
 }
 
@@ -300,7 +328,7 @@ void World::createSigil(HexPoint hex, int value) {
                 // sigil.setPosition(grid.hexPosition(hex));
                 sigil.reset(hex, effigy, grid.hexPosition(hex));
                 grid.occupy(hex, effigy);
-                sigil.log("Reusing existing sigil.");
+                // sigil.log("Reusing existing sigil.");
                 break;
             }
         }
@@ -308,23 +336,27 @@ void World::createSigil(HexPoint hex, int value) {
         Effigy effigy = Effigy(sigilsSize, value);
         sigils.emplace_back(hex, effigy, grid.hexPosition(hex));
         grid.occupy(hex, effigy);
-        sigils.at(sigilsSize).log("Creating new sigil.");
+        // sigils.at(sigilsSize).log("Creating new sigil.");
     }
 }
 
-void World::changePhase() {
+void World::phaseChange() {
     switch(maxSigilValue) {
+        case 2:
+            phaseColor1 = ColorLerp(BLUE, WHITE, 0.5f);
+            phaseColor2 = ColorLerp(GREEN, WHITE, 0.5f);
+            break;
         case 32:
-            phaseColor1 = BLUE;
-            phaseColor2 = GREEN;
+            phaseColor1 = ColorLerp(BLUE, WHITE, 0.5f);
+            phaseColor2 = BLUE;
             break;
         case 128:
-            phaseColor1 = GREEN;
-            phaseColor2 = BROWN;
+            phaseColor1 = DARKBLUE;
+            phaseColor2 = GOLD;
             break;
         case 512:
-            phaseColor1 = BROWN;
-            phaseColor2 = GRAY;
+            phaseColor1 = BLACK;
+            phaseColor2 = MAGENTA;
             break;
         case 1024:
             phaseColor1 = BLACK;
@@ -372,6 +404,14 @@ int World::getRandomSigilValue() const {
     }
 
     return nextValue;
+}
+
+int World::getMaxSigilValue() const {
+    return maxSigilValue;
+}
+
+int World::getScore() const {
+    return score;
 }
 
 bool World::isMoveAvailable() const {

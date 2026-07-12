@@ -16,6 +16,8 @@ class Sigil : public Layer {
 	Effigy effigy;
 	Effigy nextEffigy;
 
+	Color bgColor = LIGHTGRAY;
+
 	int sigilSize = SIGIL_SIZE;
 	State::Sigil state = State::Sigil::STILL;
 	int frameMoveIndex = 0;

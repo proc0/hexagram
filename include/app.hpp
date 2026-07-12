@@ -34,6 +34,10 @@ class App : Layer {
 	State::App state = State::App::LOAD;
     State::Screen screen = State::Screen::TITLE;
 
+    Color bgColor1 = BLACK;
+    Color bgColor2 = RED;
+    float titleScreenBGLerp = 0.5f;
+
 public:
 	App() {};
     ~App() = default;

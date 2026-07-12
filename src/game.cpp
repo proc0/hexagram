@@ -78,6 +78,13 @@ GameState Game::updateGame(State::App appState, Action::Surface action, InputEve
         restart();
     }
 
+    if (world.getMaxSigilValue() >= 2048) {
+        state = State::Game::WIN;
+        gameState.state = state;
+    }
+
+    gameState.score = world.getScore();
+
     return gameState;
 }
 

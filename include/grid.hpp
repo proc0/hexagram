@@ -47,6 +47,8 @@ class Grid : public Layer {
   const Window& window;
   Vector2 origin = { window.halfWidthf, window.halfHeightf };
 
+  Color bgColor = BEIGE;
+  Color borderColor = BLACK;
   // NOTE: hexSize could be a vector2 to skew the hexes
   // needs a custom draw function that draws each hex
   // and update inject/project accordingly
@@ -59,12 +61,14 @@ public:
 
     void load();
     void generate(int layers);
+    void reset();
 
     void render() const;
     void renderHex(const HexState&) const;
 
     void update();
     void updateHex(Direction);
+    void phaseChange(int phase);
 
     HexPoint inject(Vector2 point);
     Vector2 project(HexPoint);

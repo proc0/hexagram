@@ -720,23 +720,23 @@ void Surface::displayGame(GameState gameState) {
                 .sizing = { 
                     .width = CLAY_SIZING_GROW(0), 
                 },
-                .childAlignment = { .x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER }
+                .childAlignment = { .x = CLAY_ALIGN_X_LEFT, .y = CLAY_ALIGN_Y_CENTER }
             },
         }) {            
             // std::string&& numClicks = std::format("COUNTER: {}", gameState.raylibLogoClicks);
             // const char* numClicksText = TextFormat("COUNTER: %d", 10);
-            scoreText = "Score: " + std::to_string(10);
+            scoreText = "Score " + std::to_string(gameState.score);
             // Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(strlen(numClicksText)), .chars = numClicksText };
             Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(scoreText.length()), .chars = scoreText.c_str() };
             // CLAY_TEXT(Clay__IntToString(gameState.raylibLogoClicks), CLAY_TEXT_CONFIG({ 
             CLAY_TEXT(numClicksClayString, CLAY_TEXT_CONFIG({
-                .textColor = Clay_Color({255,255,255,255}),
+                .textColor = Clay_Color({ 255, 255, 255, 255 }),
                 .fontSize = 48,
             }));
         }
 
 
-        if (gameState.state == State::Game::OVER) {
+        if (gameState.state == State::Game::OVER || gameState.state == State::Game::WIN) {
             Clay_ElementId contentPauseMenuId = CLAY_ID("ContentGameOverModal");
             CLAY(contentPauseMenuId, {
                 .layout = { 
@@ -771,15 +771,48 @@ void Surface::displayGame(GameState gameState) {
                     SetMouseCursor(MOUSE_CURSOR_DEFAULT);
                 }
 
-                CLAY_TEXT(CLAY_STRING("GAME OVER"), CLAY_TEXT_CONFIG({ 
-                    .textColor = SURFACE_BUTTON_COLOR_FG,
-                    .fontSize = 48,
-                }));
+                if (gameState.state == State::Game::OVER) {
 
-                CLAY_TEXT(CLAY_STRING("Thank you for playing!"), CLAY_TEXT_CONFIG({ 
-                    .textColor = SURFACE_BUTTON_COLOR_FG,
-                    .fontSize = 24,
-                }));
+                    CLAY_TEXT(CLAY_STRING("GAME OVER"), CLAY_TEXT_CONFIG({ 
+                        .textColor = SURFACE_BUTTON_COLOR_FG,
+                        .fontSize = 48,
+                    }));
+
+                    scoreText = "Score: " + std::to_string(gameState.score);
+                    Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(scoreText.length()), .chars = scoreText.c_str() };
+
+                    CLAY_TEXT(numClicksClayString, CLAY_TEXT_CONFIG({ 
+                        .textColor = SURFACE_BUTTON_COLOR_FG,
+                        .fontSize = 24,
+                    }));
+
+                    CLAY_TEXT(CLAY_STRING("Thank you for playing!"), CLAY_TEXT_CONFIG({ 
+                        .textColor = SURFACE_BUTTON_COLOR_FG,
+                        .fontSize = 24,
+                    }));
+                }
+
+
+                if (gameState.state == State::Game::WIN) {
+                    
+                    CLAY_TEXT(CLAY_STRING("YOU WIN"), CLAY_TEXT_CONFIG({ 
+                        .textColor = SURFACE_BUTTON_COLOR_FG,
+                        .fontSize = 48,
+                    }));
+
+                    scoreText = "Score: " + std::to_string(gameState.score);
+                    Clay_String numClicksClayString = CLAY__INIT(Clay_String){ .isStaticallyAllocated = true, .length = static_cast<int32_t>(scoreText.length()), .chars = scoreText.c_str() };
+
+                    CLAY_TEXT(numClicksClayString, CLAY_TEXT_CONFIG({ 
+                        .textColor = SURFACE_BUTTON_COLOR_FG,
+                        .fontSize = 24,
+                    }));
+
+                    CLAY_TEXT(CLAY_STRING("Thank you for playing!"), CLAY_TEXT_CONFIG({ 
+                        .textColor = SURFACE_BUTTON_COLOR_FG,
+                        .fontSize = 24,
+                    }));
+                }
 
                 buttonSimple(CLAY_ID("ButtonGameRestart"), CLAY_STRING("Restart Game"));
                 buttonSimple(CLAY_ID("ButtonQuit"), CLAY_STRING("Quit"));

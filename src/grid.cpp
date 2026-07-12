@@ -8,6 +8,11 @@ void Grid::load() {
 	generate(gridSize);
 }
 
+void Grid::reset() {
+  bgColor = BEIGE;
+  borderColor = BLACK;
+}
+
 // k = number of hex layers
 void Grid::generate(int k) {
 	for (int q = -k; q <= k; q++) {
@@ -30,8 +35,8 @@ void Grid::render() const {
 }
 
 void Grid::renderHex(const HexState& hex) const {
-    DrawPoly(hex.position, 6, hexSize, 0.0f, hex.isOccupied ? RED : BLACK);
-    DrawPolyLines(hex.position, 6, hexSize, 0.0f, RAYWHITE);
+    DrawPoly(hex.position, 6, hexSize, 0.0f, bgColor);
+    DrawPolyLines(hex.position, 6, hexSize, 0.0f, borderColor);
     // const char* pointLabel = TextFormat("(%d, %d, %d)", hex.point.q, hex.point.r, hex.point.s);
     // DrawText(pointLabel, hex.position.x-30.0f, hex.position.y-9.0f, 18, BLACK);
 }
@@ -57,6 +62,33 @@ void Grid::updateHex(Direction dir) {
 	// HexPoint nextHex = hexNeighbor(activeHex, dir);
 	// activeHex = nextHex;
 	// map.at(activeHex).isActive = true;
+}
+
+
+void Grid::phaseChange(int phase) {
+    switch(phase) {
+    	case 2:
+            bgColor = BEIGE;
+            borderColor = BLACK;
+        case 32:
+            bgColor = BEIGE;
+            borderColor = BLACK;
+            break;
+        case 128:
+            bgColor = GRAY;
+            borderColor = BLACK;
+            break;
+        case 512:
+            bgColor = DARKGRAY;
+            borderColor = RAYWHITE;
+            break;
+        case 1024:
+            bgColor = BLACK;
+            borderColor = WHITE;
+            break;
+        default:
+            return;
+    }
 }
 
 void Grid::occupy(HexPoint hex, Effigy eff) {

@@ -8,14 +8,18 @@
 class World : public Layer {
     std::vector<Sigil> sigils;
 
-    Color phaseColor1 = RAYWHITE;
-    Color phaseColor2 = BLUE;
+    Color phaseColor1 = ColorLerp(BLUE, WHITE, 0.5f);
+    Color phaseColor2 = ColorLerp(GREEN, WHITE, 0.5f);
 
     const Window& window;
     Grid grid = Grid(window);
 
+    // float phaseColorLerp = 0.5f;
     State::World state = State::World::WAITING;
+    int score = 2;
     int maxSigilValue = 2;
+    bool phaseChangeEvent = false;
+    // bool phaseColorLerpSwitch = false;
 
 public:
     World(const Window& window): window(window) {};
@@ -38,9 +42,11 @@ public:
     void createSigil(HexPoint, int value);
     void placeSigil(int index);
     void spawnSigil(int value);
-    void changePhase();
-    
+    void phaseChange();
+
+    int getScore() const;
     int getRandomSigilValue() const;
+    int getMaxSigilValue() const;
 
     bool isMoveAvailable() const;
     bool isGridLocked() const;

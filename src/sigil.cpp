@@ -5,7 +5,7 @@
 #include <raylib.h>
 
 void Sigil::load() {
-	
+	bgColor = getColor();
 }
 
 void Sigil::reset(HexPoint point, Effigy eff, Vector2 pos) {
@@ -18,6 +18,7 @@ void Sigil::reset(HexPoint point, Effigy eff, Vector2 pos) {
 	frameMergeIndex = 0;
 	frameMoveIndex = 0;
 	state = State::Sigil::STILL;
+	bgColor = getColor();
 }
 
 // TODO: memoize this in a member var
@@ -25,32 +26,44 @@ Color Sigil::getColor() const {
 	Color col = GRAY;
 	switch(effigy.value) {
 		case 4:
-			col = PINK;
+			col = SKYBLUE;
 			break;
 		case 8:
-			col = GREEN;
+			col = PINK;
 			break;
 		case 16:
-			col = YELLOW;
+			col = LIME;
 			break;
 		case 32:
-			col = ORANGE;
+			col = DARKBLUE;
 			break;
 		case 64:
-			col = RED;
+			col = VIOLET;
 			break;
 		case 128:
-			col = PURPLE;
+			col = DARKPURPLE;
+			break;
+		case 256:
+			col = GOLD;
+			break;
+		case 512:
+			col = MAGENTA;
+			break;
+		case 1024:
+			col = RED;
+			break;
+		case 2048:
+			col = BLACK;
 			break;
 		default:
-			col = GRAY;
+			col = LIGHTGRAY;
 	}
 
 	return col;
 }
 
 void Sigil::render() const {
-	DrawPoly(position, 6, sigilSize, 0.0f, getColor());
+	DrawPoly(position, 6, sigilSize, 0.0f, bgColor);
 	DrawPolyLines(position, 6, sigilSize, 0.0f, BLACK);
 	const char* sigilValue = TextFormat("%d", effigy.value);
 	float fontWidth = MeasureText(sigilValue, 42);
@@ -203,10 +216,12 @@ void Sigil::setEffigy(Effigy eff) {
 	} else {
 		effigy = eff;
 	}
+	bgColor = getColor();
 }
 
 void Sigil::finishMerge() {
 	effigy = nextEffigy;
+	bgColor = getColor();
 }
 
 bool Sigil::canMove(const Grid& grid) const {
@@ -214,8 +229,8 @@ bool Sigil::canMove(const Grid& grid) const {
 	for (auto& dir : ALL_DIRECTIONS) {
 		if (!grid.isEdge(hex, dir)) {
 			HexPoint neighbor = grid.hexNeighbor(hex, dir);
-			availableMove = !grid.isOccupied(neighbor)
-				|| grid.getEffigy(grid.hexNeighbor(neighbor, dir)).value == effigy.value;
+			availableMove = hex != neighbor && (!grid.isOccupied(neighbor)
+							|| grid.getEffigy(neighbor).value == effigy.value);
 		}
 	}
 
