@@ -120,7 +120,7 @@ void App::runIntro() {
 #ifdef __EMSCRIPTEN__
             // cancel the main loop before setting it to run
             emscripten_cancel_main_loop();
-            emscripten_set_main_loop_arg(run, app, 0, 0);
+            emscripten_set_main_loop_arg(run, this, 0, 0);
 #endif
         }
     }

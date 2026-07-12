@@ -11,7 +11,7 @@ class World : public Layer {
     Color phaseColor1 = ColorLerp(BLUE, WHITE, 0.5f);
     Color phaseColor2 = ColorLerp(GREEN, WHITE, 0.5f);
 
-    const Window& window;
+    Window& window;
     Grid grid = Grid(window);
 
     // float phaseColorLerp = 0.5f;
@@ -22,7 +22,7 @@ class World : public Layer {
     // bool phaseColorLerpSwitch = false;
 
 public:
-    World(const Window& window): window(window) {};
+    World(Window& window): window(window) {};
     ~World() = default;
     
     void (World::*render)() const = &World::renderUnit;

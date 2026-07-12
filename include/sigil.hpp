@@ -7,7 +7,7 @@
 
 #define SIGIL_SIZE 60.0f
 
-class Sigil : public Layer {
+class Sigil {
 	HexPoint hex;
 	Vector2 position;
 	Vector2 lastPosition;
@@ -18,7 +18,7 @@ class Sigil : public Layer {
 
 	Color bgColor = LIGHTGRAY;
 
-	int sigilSize = SIGIL_SIZE;
+	float sigilSize = SIGIL_SIZE;
 	State::Sigil state = State::Sigil::STILL;
 	int frameMoveIndex = 0;
 	int frameMergeIndex = 0;
@@ -57,6 +57,8 @@ public:
 	
 	Effigy getEffigy() const;
 	void setEffigy(Effigy);
+
+	void resize(float unit);
 	
 	bool canMove(const Grid&) const;
 	bool isMoving() const;
@@ -64,6 +66,5 @@ public:
 	void enable();
 	void disable();
 	
-	void resize(int width, int height) override;
 	void log(const char* context) const;
 };

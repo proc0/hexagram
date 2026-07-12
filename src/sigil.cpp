@@ -253,8 +253,8 @@ void Sigil::disable() {
 	active = false;
 }
 
-void Sigil::resize(int width, int height) {
-	
+void Sigil::resize(float unit) {
+	sigilSize = SIGIL_SIZE*unit;
 }
 
 void Sigil::log(const char* context) const {

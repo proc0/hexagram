@@ -139,7 +139,12 @@ Vector2 Grid::project(HexPoint hexPoint) {
 }
 
 void Grid::resize(int width, int height) {
+	hexSize = HEX_SIZE*window.unit;
+	origin = { window.halfWidthf, window.halfHeightf };
 
+	for (auto& [point, hex] : map ) {
+		hex.position = project(point);
+	}
 }
 
 HexPoint Grid::hexAdd(HexPoint a, HexPoint b) const {

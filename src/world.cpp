@@ -11,6 +11,8 @@ void World::load(){
     // splat = LoadSound(pathSoundSplat);
 
     grid.load();
+    window.enlist(&grid);
+    grid.resize(window.width, window.height);
 
     sigils.reserve(grid.getTotalHexes() + 1);
 
@@ -24,6 +26,7 @@ void World::load(){
     // sigilHat.fill(2);
 
     createSigil(HexPoint(0, 0, 0), 2);
+    sigils.at(1).resize(window.unit);
     // createSigil(HexPoint(0, 2, -2), 4);
     // createSigil(HexPoint(0, 3, -3), 12);
     // createSigil(HexPoint(-2, 0, 2), 2);
@@ -335,6 +338,10 @@ void World::createSigil(HexPoint hex, int value) {
     } else {
         Effigy effigy = Effigy(sigilsSize, value);
         sigils.emplace_back(hex, effigy, grid.hexPosition(hex));
+        // TODO: figure out how to remove need to pass in unit
+        // and call resize every time. Should Sigil be a Layer and 
+        // have its own resize?
+        sigils.back().resize(window.unit);
         grid.occupy(hex, effigy);
         // sigils.at(sigilsSize).log("Creating new sigil.");
     }
@@ -463,5 +470,8 @@ void World::unload(){
 }
 
 void World::resize(int width, int height) {
-    TraceLog(LOG_INFO, "HELLO FROM WORLD RESIZE %i %i", width, height);
+    for (auto& sigil : sigils) {
+        sigil.resize(window.unit);
+        sigil.setPosition(grid.project(sigil.getHex()));
+    }
 }

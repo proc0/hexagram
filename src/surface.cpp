@@ -292,22 +292,41 @@ void Surface::renderRaylib(Clay_RenderCommandArray& renderCommands) const {
 void Surface::initOverlay() {
 #ifdef __EMSCRIPTEN__
     // GLSL ES 2.0 shader for WebGL 1.0 used by Emscripten for Web
-    const char* overlayShaderCode = "precision mediump float\n"
-                                    "\n"
-                                    "varying vec2 fragTexCoord;\n"
-                                    "varying vec4 fragColor;\n"
-                                    "\n"
-                                    "uniform sampler2D texture0;\n"
-                                    "uniform vec4 overlayColor;\n"
-                                    "\n"
-                                    "void main()\n"
-                                    "{\n"
-                                    "    vec4 texelColor = texture2D(texture0, fragTexCoord) * fragColor;\n"
-                                    "\n"
-                                    "    vec3 blendedRGB = mix(texelColor.rgb, overlayColor.rgb, overlayColor.a);\n"
-                                    "\n"
-                                    "    gl_FragColor = vec4(blendedRGB, texelColor.a);\n"
-                                    "}";
+    // const char* overlayShaderCode = "precision mediump float;\n"
+    //                                 "\n"
+    //                                 "varying vec2 fragTexCoord;\n"
+    //                                 "varying vec4 fragColor;\n"
+    //                                 "\n"
+    //                                 "uniform sampler2D texture0;\n"
+    //                                 "uniform vec4 overlayColor;\n"
+    //                                 "\n"
+    //                                 "void main()\n"
+    //                                 "{\n"
+    //                                 "    vec4 texelColor = texture2D(texture0, fragTexCoord) * fragColor;\n"
+    //                                 "\n"
+    //                                 "    vec3 blendedRGB = mix(texelColor.rgb, overlayColor.rgb, overlayColor.a);\n"
+    //                                 "\n"
+    //                                 "    gl_FragColor = vec4(blendedRGB, texelColor.a);\n"
+    //                                 "}";
+    // GLSL ES 3.0 shader for WebGL 2.0 used by Emscripten for Web
+    const char* overlayShaderCode = 
+        "#version 300 es\n"               // 1. Must be the absolute first line
+        "precision mediump float;\n"
+        "\n"
+        "in vec2 fragTexCoord;\n"        // 2. 'varying' becomes 'in'
+        "in vec4 fragColor;\n"           // 2. 'varying' becomes 'in'
+        "\n"
+        "uniform sampler2D texture0;\n"
+        "uniform vec4 overlayColor;\n"
+        "\n"
+        "out vec4 finalColor;\n"         // 4. Declare a custom output variable
+        "\n"
+        "void main()\n"
+        "{\n"
+        "    vec4 texelColor = texture(texture0, fragTexCoord) * fragColor;\n"
+        "    vec3 blendedRGB = mix(texelColor.rgb, overlayColor.rgb, overlayColor.a);\n"
+        "    finalColor = vec4(blendedRGB, texelColor.a);\n"
+        "}";
 #else
 	const char* overlayShaderCode = "#version 330\n"
 	                                "\n"
