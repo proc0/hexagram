@@ -26,7 +26,7 @@ public:
     ~World() = default;
     
     void (World::*render)() const = &World::renderUnit;
-    void (World::*update)() = &World::updateUnit;
+    void (World::*update)(Action::Surface) = &World::updateUnit;
 
     void load();
     void restart();
@@ -35,9 +35,9 @@ public:
     void renderMain() const;
     void renderGame() const;
 
-    void updateUnit();
-    void updateMain();
-    void updateGame();
+    void updateUnit(Action::Surface);
+    void updateMain(Action::Surface);
+    void updateGame(Action::Surface);
     void updateSigils(Direction dir);
     void createSigil(HexPoint, int value);
     void placeSigil(int index);

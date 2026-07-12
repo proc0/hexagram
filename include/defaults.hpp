@@ -7,7 +7,7 @@
 #define SCREEN_WIDTH 720
 #define SCREEN_HEIGHT 720
 // centimeters/pixel at 1280x720px
-#define SCREEN_UNIT 1.3f
+#define SCREEN_UNIT 1.2f
 #define SCREEN_RESIZE_RATE 300
 
 #define UNIT_RATIO (sqrtf(powf(static_cast<float>(SCREEN_WIDTH), 2.0f) + powf(static_cast<float>(SCREEN_HEIGHT), 2.0f)))

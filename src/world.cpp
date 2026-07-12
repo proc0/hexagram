@@ -8,8 +8,6 @@ void World::load(){
     // std::string pathAssets = DIR_ASSETS;
     // const char* pathSoundSplat = pathAssets.append("/").append(URI_SOUND_SPLAT).c_str();
 
-    // splat = LoadSound(pathSoundSplat);
-
     grid.load();
     window.enlist(&grid);
     grid.resize(window.width, window.height);
@@ -70,11 +68,11 @@ void World::renderGame() const {
     }
 }
 
-void World::updateUnit(){
+void World::updateUnit(Action::Surface action){
 
 }
 
-void World::updateMain(){
+void World::updateMain(Action::Surface action){
 
 }
 
@@ -186,7 +184,7 @@ void World::updateSigils(Direction dir) {
     state = State::World::ANIMATING;
 }
 
-void World::updateGame(){
+void World::updateGame(Action::Surface action){
     if (state == State::World::GRIDLOCK) return;
 
     grid.update();
@@ -248,17 +246,17 @@ void World::updateGame(){
 
     if (state == State::World::WAITING) {
 
-        if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+        if (action == Action::Surface::HUD_UP || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
             updateSigils(Direction::UP);
-        } else if (IsKeyPressed(KEY_E) || IsKeyPressed(KEY_RIGHT)) {
+        } else if (action == Action::Surface::HUD_UP_RIGHT || IsKeyPressed(KEY_E) || IsKeyPressed(KEY_RIGHT)) {
             updateSigils(Direction::UP_RIGHT);
-        } else if (IsKeyPressed(KEY_D)) {
+        } else if (action == Action::Surface::HUD_DOWN_RIGHT || IsKeyPressed(KEY_D)) {
             updateSigils(Direction::DOWN_RIGHT);
-        } else if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+        } else if (action == Action::Surface::HUD_DOWN || IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
             updateSigils(Direction::DOWN);
-        } else if (IsKeyPressed(KEY_A)) {
+        } else if (action == Action::Surface::HUD_DOWN_LEFT || IsKeyPressed(KEY_A)) {
             updateSigils(Direction::DOWN_LEFT);
-        } else if (IsKeyPressed(KEY_Q) || IsKeyPressed(KEY_LEFT)) {
+        } else if (action == Action::Surface::HUD_UP_LEFT || IsKeyPressed(KEY_Q) || IsKeyPressed(KEY_LEFT)) {
             updateSigils(Direction::UP_LEFT);
         }
 

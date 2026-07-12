@@ -67,6 +67,14 @@ class Surface : public Layer {
     Camera Raylib_camera;
     Font fonts[2];
 
+    Texture2D imgArrowUp;
+    Texture2D imgArrowUpRight;
+    Texture2D imgArrowDownRight;
+    Texture2D imgArrowDown;
+    Texture2D imgArrowDownLeft;
+    Texture2D imgArrowUpLeft;
+
+
     std::string scoreText;
     // Texture2D profilePicture;
     // Texture2D parchmentTexture;
@@ -82,6 +90,14 @@ class Surface : public Layer {
 
 public:
     const std::unordered_map<std::string, Action::Surface> buttonActions = {
+        { "ButtonHudUp", Action::Surface::HUD_UP },
+        { "ButtonHudUpRight", Action::Surface::HUD_UP_RIGHT },
+        { "ButtonHudDownRight", Action::Surface::HUD_DOWN_RIGHT },
+        { "ButtonHudDown", Action::Surface::HUD_DOWN },
+        { "ButtonHudDownLeft", Action::Surface::HUD_DOWN_LEFT },
+        { "ButtonHudUpLeft", Action::Surface::HUD_UP_LEFT },
+
+        
         { "ButtonGameNew", Action::Surface::NEW_GAME },
         { "ButtonGameResume", Action::Surface::RESUME_GAME },
         // { "ButtonMainMenu", Action::Surface::MAIN_MENU },
@@ -124,6 +140,7 @@ public:
     Action::Surface updateMenu(const InputEvent& inputEvent);
 
     void buttonSimple(const Clay_ElementId& id, const Clay_String& buttonText);
+    void buttonImage(const Clay_ElementId& elementId, Texture2D* image);
     void buttonTab(const Clay_ElementId& id, const Clay_String& buttonText);
     static void handleError(Clay_ErrorData);
     void resize(int width, int height);

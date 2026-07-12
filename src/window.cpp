@@ -72,23 +72,23 @@ void Window::update(InputEvent input) {
 
     // TODO: move middle mouse button to Input, refactor
     // zooming and panning
-    Vector2 mouseWheel = GetMouseWheelMoveV();
+    // Vector2 mouseWheel = GetMouseWheelMoveV();
     
-    if (mouseWheel.y > 0) {
-        zoom(true);
-    } else if (mouseWheel.y < 0) {
-        zoom(false);
-    } else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) { 
-        isTracking = true;
-    }
+    // if (mouseWheel.y > 0) {
+    //     zoom(true);
+    // } else if (mouseWheel.y < 0) {
+    //     zoom(false);
+    // } else if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) { 
+    //     isTracking = true;
+    // }
 
-    if (isToggleTracking && input.id == Event::Input::PRIMARY) {
-        isTracking = true;
-    }
+    // if (isToggleTracking && input.id == Event::Input::PRIMARY) {
+    //     isTracking = true;
+    // }
 
-    if (isTracking) {
-        track(input);
-    }
+    // if (isTracking) {
+    //     track(input);
+    // }
 }
 
 void Window::resize(int newWidth, int newHeight) {

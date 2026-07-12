@@ -6,6 +6,12 @@
 namespace Action {
     enum Surface {
         DO_NOTHING,
+        HUD_UP,
+        HUD_UP_RIGHT,
+        HUD_DOWN_RIGHT,
+        HUD_DOWN,
+        HUD_DOWN_LEFT,
+        HUD_UP_LEFT,
         NEW_GAME,
         RESTART_GAME,
         RESUME_GAME,
