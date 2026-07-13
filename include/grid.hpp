@@ -98,6 +98,7 @@ public:
     bool isFull() const;
     bool isEdge(HexPoint, Direction) const;
     bool isHexEdge(HexPoint) const;
+    bool isHexEdgeDirection(HexPoint point, HexPoint dir) const;
     bool isOccupied(HexPoint) const;
     bool isValid(HexPoint) const;
     // void transition(State::Screen);

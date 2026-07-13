@@ -353,6 +353,17 @@ bool Grid::isHexEdge(HexPoint hex) const {
 	return abs(hex.q) == gridSize || abs(hex.r) == gridSize || abs(hex.s) == gridSize;
 }
 
+bool Grid::isHexEdgeDirection(HexPoint hex, HexPoint dir) const {
+	if (dir.q == 0) {
+		return hex.r == dir.r*gridSize || hex.s == dir.s*gridSize;
+	} else if (dir.r == 0) {
+		return hex.q == dir.q*gridSize || hex.s == dir.s*gridSize;
+	} else if (dir.s == 0) {
+		return hex.q == dir.q*gridSize || hex.r == dir.r*gridSize;
+	}
+	return false;
+}
+
 Effigy Grid::getEffigy(HexPoint hex) const {
 	if (!isValid(hex)) return Effigy({});
 

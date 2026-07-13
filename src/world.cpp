@@ -100,17 +100,20 @@ void World::updateMove(HexPoint hexDir) {
             Sigil& sig = sigils.at(sigilIndex);
             HexPoint fwdNextHex = grid.hexAdd(nextHex, hexDir);
 
-            while(maxTries > 0 && !grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+            while(maxTries > 0 && !grid.isOccupied(fwdNextHex) && !grid.isHexEdgeDirection(fwdNextHex, hexDir)) {
                 fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
             }
 
             if (grid.isOccupied(fwdNextHex)) {
                 Effigy nextEff = grid.getEffigy(fwdNextHex);
-                if (nextEff.value == sig.getEffigy().value) {
-                    Sigil& nextSig = sigils.at(nextEff.index);
-                    nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                Sigil& nextSig = sigils.at(nextEff.index);
+                if (!nextSig.hasMerged() && nextEff.value == sig.getEffigy().value) {
+                    Effigy mergedEff = { nextEff.index, nextEff.value + sig.getEffigy().value };
+                    nextSig.setEffigy(mergedEff);
+                    nextSig.setMerged(true);
                     sig.disable();
                     grid.vacate(nextHex);
+                    grid.occupy(fwdNextHex, mergedEff);
                 }
             } else {
                 grid.vacate(nextHex);
@@ -128,6 +131,7 @@ void World::updateMove(HexPoint hexDir) {
         //TODO:
         /////////
         /// only test the edge OTHER than the one in the direction of the movement
+        /// Only edges PERPENDICULAR to the direction of the movement, i.e. if up, then detect side edges (not down)
         while (maxTries > 0 && !grid.isHexEdge(nextLeftHex) && !grid.isOccupied(nextLeftHex)) {
             // grid.occupy(nextLeftHex, { 0, 0 });
             nextLeftHex = grid.hexAdd(nextLeftHex, hexLeftDir);
@@ -138,17 +142,20 @@ void World::updateMove(HexPoint hexDir) {
                 Sigil& sig = sigils.at(sigilIndex);
                 HexPoint fwdNextHex = grid.hexAdd(nextLeftHex, hexDir);
 
-                while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdgeDirection(fwdNextHex, hexDir)) {
                     fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
                 }
 
                 if (grid.isOccupied(fwdNextHex)) {
                     Effigy nextEff = grid.getEffigy(fwdNextHex);
-                    if (nextEff.value == sig.getEffigy().value) {
-                        Sigil& nextSig = sigils.at(nextEff.index);
-                        nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                    Sigil& nextSig = sigils.at(nextEff.index);
+                    if (!nextSig.hasMerged() && nextEff.value == sig.getEffigy().value) {
+                        Effigy mergedEff = { nextEff.index, nextEff.value + sig.getEffigy().value };
+                        nextSig.setEffigy(mergedEff);
+                        nextSig.setMerged(true);
                         sig.disable();
                         grid.vacate(nextLeftHex);
+                        grid.occupy(fwdNextHex, mergedEff);
                     }
                 } else {
                     grid.vacate(nextLeftHex);
@@ -167,17 +174,20 @@ void World::updateMove(HexPoint hexDir) {
             Sigil& sig = sigils.at(sigilIndex);
             HexPoint fwdNextHex = grid.hexAdd(nextLeftHex, hexDir);
 
-            while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+            while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdgeDirection(fwdNextHex, hexDir)) {
                 fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
             }
 
             if (grid.isOccupied(fwdNextHex)) {
                 Effigy nextEff = grid.getEffigy(fwdNextHex);
-                if (nextEff.value == sig.getEffigy().value) {
-                    Sigil& nextSig = sigils.at(nextEff.index);
-                    nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                Sigil& nextSig = sigils.at(nextEff.index);
+                if (!nextSig.hasMerged() && nextEff.value == sig.getEffigy().value) {
+                    Effigy mergedEff = { nextEff.index, nextEff.value + sig.getEffigy().value };
+                    nextSig.setEffigy(mergedEff);
+                    nextSig.setMerged(true);
                     sig.disable();
                     grid.vacate(nextLeftHex);
+                    grid.occupy(fwdNextHex, mergedEff);
                 }
             } else {
                 grid.vacate(nextLeftHex);
@@ -200,17 +210,20 @@ void World::updateMove(HexPoint hexDir) {
                 Sigil& sig = sigils.at(sigilIndex);
                 HexPoint fwdNextHex = grid.hexAdd(nextRightHex, hexDir);
 
-                while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdgeDirection(fwdNextHex, hexDir)) {
                     fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
                 }
 
                 if (grid.isOccupied(fwdNextHex)) {
                     Effigy nextEff = grid.getEffigy(fwdNextHex);
-                    if (nextEff.value == sig.getEffigy().value) {
-                        Sigil& nextSig = sigils.at(nextEff.index);
-                        nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                    Sigil& nextSig = sigils.at(nextEff.index);
+                    if (!nextSig.hasMerged() && nextEff.value == sig.getEffigy().value) {
+                        Effigy mergedEff = { nextEff.index, nextEff.value + sig.getEffigy().value };
+                        nextSig.setEffigy(mergedEff);
+                        nextSig.setMerged(true);
                         sig.disable();
                         grid.vacate(nextRightHex);
+                        grid.occupy(fwdNextHex, mergedEff);
                     }
                 } else {
                     grid.vacate(nextRightHex);
@@ -229,17 +242,20 @@ void World::updateMove(HexPoint hexDir) {
             Sigil& sig = sigils.at(sigilIndex);
             HexPoint fwdNextHex = grid.hexAdd(nextRightHex, hexDir);
 
-            while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+            while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdgeDirection(fwdNextHex, hexDir)) {
                 fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
             }
 
             if (grid.isOccupied(fwdNextHex)) {
                 Effigy nextEff = grid.getEffigy(fwdNextHex);
-                if (nextEff.value == sig.getEffigy().value) {
-                    Sigil& nextSig = sigils.at(nextEff.index);
-                    nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                Sigil& nextSig = sigils.at(nextEff.index);
+                if (!nextSig.hasMerged() && nextEff.value == sig.getEffigy().value) {
+                    Effigy mergedEff = { nextEff.index, nextEff.value + sig.getEffigy().value };
+                    nextSig.setEffigy(mergedEff);
+                    nextSig.setMerged(true);
                     sig.disable();
                     grid.vacate(nextRightHex);
+                    grid.occupy(fwdNextHex, mergedEff);
                 }
             } else {
                 grid.vacate(nextRightHex);
@@ -261,17 +277,20 @@ void World::updateMove(HexPoint hexDir) {
         Sigil& sig = sigils.at(sigilIndex);
         HexPoint fwdNextHex = grid.hexAdd(nextHex, hexDir);
 
-        while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+        while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdgeDirection(fwdNextHex, hexDir)) {
             fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
         }
 
         if (grid.isOccupied(fwdNextHex)) {
             Effigy nextEff = grid.getEffigy(fwdNextHex);
-            if (nextEff.value == sig.getEffigy().value) {
-                Sigil& nextSig = sigils.at(nextEff.index);
-                nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+            Sigil& nextSig = sigils.at(nextEff.index);
+            if (!nextSig.hasMerged() && nextEff.value == sig.getEffigy().value) {
+                Effigy mergedEff = { nextEff.index, nextEff.value + sig.getEffigy().value };
+                nextSig.setEffigy(mergedEff);
+                nextSig.setMerged(true);
                 sig.disable();
                 grid.vacate(nextHex);
+                grid.occupy(fwdNextHex, mergedEff);
             }
         } else {
             grid.vacate(nextHex);
@@ -279,6 +298,18 @@ void World::updateMove(HexPoint hexDir) {
             sig.setHex(fwdNextHex);
             sig.setPosition(grid.hexPosition(fwdNextHex));
         }
+    }
+
+    for (auto& sigil : sigils) {
+        sigil.setMerged(false);
+        // if (sigil.hasMerged()) {
+        //     sigil.finishMerge();
+        // }
+
+        // if (sigil.hasBeenAbsorbed()) {
+        //     sigil.disable();
+        //     sigil.setAbsorbed(false);
+        // }
     }
 }
 
@@ -393,16 +424,22 @@ void World::updateSigils(Direction dir) {
 void World::updateGame(Action::Surface action){
     if (action == Action::Surface::HUD_UP || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
         updateMove(HexDirection::NORTH);
+        spawnSigil(getRandomSigilValue());
     } else if (action == Action::Surface::HUD_UP_RIGHT || IsKeyPressed(KEY_E) || IsKeyPressed(KEY_RIGHT)) {
         updateMove(HexDirection::NORTH_EAST);
+        spawnSigil(getRandomSigilValue());
     } else if (action == Action::Surface::HUD_DOWN_RIGHT || IsKeyPressed(KEY_D)) {
         updateMove(HexDirection::SOUTH_EAST);
+        spawnSigil(getRandomSigilValue());
     } else if (action == Action::Surface::HUD_DOWN || IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
         updateMove(HexDirection::SOUTH);
+        spawnSigil(getRandomSigilValue());
     } else if (action == Action::Surface::HUD_DOWN_LEFT || IsKeyPressed(KEY_A)) {
         updateMove(HexDirection::SOUTH_WEST);
+        spawnSigil(getRandomSigilValue());
     } else if (action == Action::Surface::HUD_UP_LEFT || IsKeyPressed(KEY_Q) || IsKeyPressed(KEY_LEFT)) {
         updateMove(HexDirection::NORTH_WEST);
+        spawnSigil(getRandomSigilValue());
     }
 }
 

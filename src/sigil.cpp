@@ -245,18 +245,20 @@ void Sigil::setHex(HexPoint point) {
 }
 
 Effigy Sigil::getEffigy() const {
-	if (isMerged) {
-		return nextEffigy;
-	}
+	// if (isMerged) {
+	// 	return nextEffigy;
+	// }
 	return effigy;
 }
 
 void Sigil::setEffigy(Effigy eff) {
-	if (isMerged) {
-		nextEffigy = eff;
-	} else {
 		effigy = eff;
-	}
+	
+	// if (isMerged) {
+	// 	nextEffigy = eff;
+	// } else {
+	// 	effigy = eff;
+	// }
 	bgColor = getColor();
 }
 
