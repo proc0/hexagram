@@ -41,7 +41,8 @@ public:
     // old updates
     void updateGame2(Action::Surface);
     void updateSigils(Direction dir);
-
+    void moveSigil(HexPoint targetHex, HexPoint hexDir);
+    
     void updateMove(HexPoint hexDir);
     void createSigil(HexPoint, int value);
     void placeSigil(int index);

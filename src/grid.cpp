@@ -364,6 +364,18 @@ bool Grid::isHexEdgeDirection(HexPoint hex, HexPoint dir) const {
 	return false;
 }
 
+bool Grid::isHexInBoundsDirection(HexPoint hex, HexPoint dir) const {
+	if (dir.q == 0) {
+		return hex.r < dir.r*gridSize+1 || hex.s < dir.s*gridSize+1;
+	} else if (dir.r == 0) {
+		return hex.q < dir.q*gridSize+1 || hex.s < dir.s*gridSize+1;
+	} else if (dir.s == 0) {
+		return hex.q < dir.q*gridSize+1 || hex.r < dir.r*gridSize+1;
+	}
+	return false;
+}
+
+
 Effigy Grid::getEffigy(HexPoint hex) const {
 	if (!isValid(hex)) return Effigy({});
 
