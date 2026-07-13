@@ -179,8 +179,8 @@ struct HexPoint {
     int q, r, s;
     // axial coordinates constructor
     // derive the third coordinate s by -q - r
-    HexPoint(int q1, int r1): q(q1), r(r1), s(-q1 - r1) {}
-    HexPoint(int q1, int r1, int s1): q(q1), r(r1), s(s1) {}
+    constexpr HexPoint(int q1, int r1): q(q1), r(r1), s(-q1 - r1) {}
+    constexpr HexPoint(int q1, int r1, int s1): q(q1), r(r1), s(s1) {}
     bool operator==(const HexPoint&) const = default;
 };
 
@@ -200,3 +200,72 @@ struct Matrix2x2Pair {
     const float f0, f1, f2, f3;
     const float b0, b1, b2, b3;
 };
+
+// NOTE: to rotate, swap two components in this pattern:
+// swap first and last (outer)
+// swap second and last (tail)
+// swap first and second (head)
+// wherever the 0 is determines which swap
+// if 0 is first, -> outer swap
+// if 0 is second -> head swap
+// if 0 is third -> tail swap
+
+// clockwise swap is: outer -> tail -> head (or head -> outer -> tail )
+// counter clockwise swap is: tail -> outer -> head (or outer -> head -> tail )
+
+// i.e. first determine where zero is
+// Start NORTH -> (0,-1,1) go clockwise:
+// 0 is first, for clockwise, this is an outer swap
+// swap q and s (0,-1,1) -> (1,-1,0) for outer swap
+
+// clockwise swap map:
+// q = 0 -> outer swap 
+// r = 0 -> head swap
+// s = 0 -> tail swap
+
+// counter-clockwise swap map:
+// q = 0 -> head swap
+// r = 0 -> tail swap
+// s = 0 -> outer swap
+
+// the zero is what wraps around
+// the zero moves "forward" or "backward" in the components
+// depending on how you rotate
+// rotate clockwise, zero moves from q -> r -> s
+// rotate counter clockwise zero moves from s -> r -> q
+
+struct HexDirection {
+    static constexpr HexPoint NORTH      {  0, -1,  1 };
+    static constexpr HexPoint NORTH_EAST {  1, -1,  0 };
+    static constexpr HexPoint SOUTH_EAST {  1,  0, -1 };
+    static constexpr HexPoint SOUTH      {  0,  1, -1 };
+    static constexpr HexPoint SOUTH_WEST { -1,  1,  0 };
+    static constexpr HexPoint NORTH_WEST { -1,  0,  1 };
+};
+
+static inline HexPoint oppositeHexDir(HexPoint dir) {
+    HexPoint result = dir;
+
+        if (dir == HexDirection::NORTH) {
+
+            result = HexDirection::SOUTH;
+        } else if (dir == HexDirection::NORTH_EAST) {
+
+            result = HexDirection::SOUTH_WEST;
+        } else if (dir == HexDirection::SOUTH_EAST) {
+
+            result = HexDirection::NORTH_WEST;
+        } else if (dir == HexDirection::SOUTH) {
+
+            result = HexDirection::NORTH;
+        } else if (dir == HexDirection::SOUTH_WEST) {
+
+            result = HexDirection::NORTH_EAST;
+        } else if (dir == HexDirection::NORTH_WEST) {
+
+            result = HexDirection::SOUTH_EAST;
+        }
+
+
+    return result;
+}

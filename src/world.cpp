@@ -76,6 +76,212 @@ void World::updateMain(Action::Surface action){
 
 }
 
+void World::updateMove(HexPoint hexDir) {
+
+    // TraceLog(LOG_INFO, "DIR HEX: %d %d %d", hexDir.q, hexDir.r, hexDir.s);
+    HexPoint oppositeHex = oppositeHexDir(hexDir);
+    // TraceLog(LOG_INFO, "OPPOSITE HEX: %d %d %d", oppositeHex.q, oppositeHex.r, oppositeHex.s);
+    HexPoint hexLeftDir = grid.hexUnitRotate(oppositeHex, true);
+    // TraceLog(LOG_INFO, "LEFT HEX: %d %d %d", hexLeftDir.q, hexLeftDir.r, hexLeftDir.s);
+    HexPoint hexRightDir = grid.hexUnitRotate(oppositeHex, false);
+    // TraceLog(LOG_INFO, "RIGHT HEX: %d %d %d", hexRightDir.q, hexRightDir.r, hexRightDir.s);
+    HexPoint cornerHex = grid.hexCorner(hexDir);
+    // TraceLog(LOG_INFO, "CORNER HEX: %d %d %d", cornerHex.q, cornerHex.r, cornerHex.s);
+
+    HexPoint nextHex = grid.hexAdd(cornerHex, oppositeHex);
+    // TraceLog(LOG_INFO, "NEXT HEX: %d %d %d", nextHex.q, nextHex.r, nextHex.s);
+    int maxTries = 30;
+    while (maxTries > 0 && !grid.isHexEdge(nextHex)) {
+
+        // grid.occupy(nextHex, { 0, 0 });
+
+        if (grid.isOccupied(nextHex)) {
+            int sigilIndex = grid.getEffigy(nextHex).index;
+            Sigil& sig = sigils.at(sigilIndex);
+            HexPoint fwdNextHex = grid.hexAdd(nextHex, hexDir);
+
+            while(maxTries > 0 && !grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
+            }
+
+            if (grid.isOccupied(fwdNextHex)) {
+                Effigy nextEff = grid.getEffigy(fwdNextHex);
+                if (nextEff.value == sig.getEffigy().value) {
+                    Sigil& nextSig = sigils.at(nextEff.index);
+                    nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                    sig.disable();
+                    grid.vacate(nextHex);
+                }
+            } else {
+                grid.vacate(nextHex);
+                grid.occupy(fwdNextHex, sig.getEffigy());
+                sig.setHex(fwdNextHex);
+                sig.setPosition(grid.hexPosition(fwdNextHex));
+            }
+        }
+
+        HexPoint nextLeftHex = grid.hexAdd(nextHex, hexLeftDir);
+            // grid.occupy(nextLeftHex, { 0, 0 });
+        // TraceLog(LOG_INFO, "NEXT LEFT HEX: %d %d %d", nextLeftHex.q, nextLeftHex.r, nextLeftHex.s);
+        
+        ////////////////
+        //TODO:
+        /////////
+        /// only test the edge OTHER than the one in the direction of the movement
+        while (maxTries > 0 && !grid.isHexEdge(nextLeftHex) && !grid.isOccupied(nextLeftHex)) {
+            // grid.occupy(nextLeftHex, { 0, 0 });
+            nextLeftHex = grid.hexAdd(nextLeftHex, hexLeftDir);
+
+
+            if (grid.isOccupied(nextLeftHex)) {
+                int sigilIndex = grid.getEffigy(nextLeftHex).index;
+                Sigil& sig = sigils.at(sigilIndex);
+                HexPoint fwdNextHex = grid.hexAdd(nextLeftHex, hexDir);
+
+                while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                    fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
+                }
+
+                if (grid.isOccupied(fwdNextHex)) {
+                    Effigy nextEff = grid.getEffigy(fwdNextHex);
+                    if (nextEff.value == sig.getEffigy().value) {
+                        Sigil& nextSig = sigils.at(nextEff.index);
+                        nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                        sig.disable();
+                        grid.vacate(nextLeftHex);
+                    }
+                } else {
+                    grid.vacate(nextLeftHex);
+                    grid.occupy(fwdNextHex, sig.getEffigy());
+                    sig.setHex(fwdNextHex);
+                    sig.setPosition(grid.hexPosition(fwdNextHex));
+                }
+            }
+
+            maxTries--;
+        }
+
+        // edge left
+        if (grid.isOccupied(nextLeftHex)) {
+            int sigilIndex = grid.getEffigy(nextLeftHex).index;
+            Sigil& sig = sigils.at(sigilIndex);
+            HexPoint fwdNextHex = grid.hexAdd(nextLeftHex, hexDir);
+
+            while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
+            }
+
+            if (grid.isOccupied(fwdNextHex)) {
+                Effigy nextEff = grid.getEffigy(fwdNextHex);
+                if (nextEff.value == sig.getEffigy().value) {
+                    Sigil& nextSig = sigils.at(nextEff.index);
+                    nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                    sig.disable();
+                    grid.vacate(nextLeftHex);
+                }
+            } else {
+                grid.vacate(nextLeftHex);
+                grid.occupy(fwdNextHex, sig.getEffigy());
+                sig.setHex(fwdNextHex);
+                sig.setPosition(grid.hexPosition(fwdNextHex));
+            }
+        }
+
+
+        HexPoint nextRightHex = grid.hexAdd(nextHex, hexRightDir);
+        // TraceLog(LOG_INFO, "NEXT RIGHT HEX: %d %d %d", nextRightHex.q, nextRightHex.r, nextRightHex.s);
+            // grid.occupy(nextRightHex, { 0, 0 });
+        while (maxTries > 0 && !grid.isHexEdge(nextRightHex) && !grid.isOccupied(nextRightHex)) {
+            // grid.occupy(nextRightHex, { 0, 0 });
+            nextRightHex = grid.hexAdd(nextRightHex, hexRightDir);
+
+            if (grid.isOccupied(nextRightHex)) {
+                int sigilIndex = grid.getEffigy(nextRightHex).index;
+                Sigil& sig = sigils.at(sigilIndex);
+                HexPoint fwdNextHex = grid.hexAdd(nextRightHex, hexDir);
+
+                while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                    fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
+                }
+
+                if (grid.isOccupied(fwdNextHex)) {
+                    Effigy nextEff = grid.getEffigy(fwdNextHex);
+                    if (nextEff.value == sig.getEffigy().value) {
+                        Sigil& nextSig = sigils.at(nextEff.index);
+                        nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                        sig.disable();
+                        grid.vacate(nextRightHex);
+                    }
+                } else {
+                    grid.vacate(nextRightHex);
+                    grid.occupy(fwdNextHex, sig.getEffigy());
+                    sig.setHex(fwdNextHex);
+                    sig.setPosition(grid.hexPosition(fwdNextHex));
+                }
+            }
+
+            maxTries--;
+        }
+            // grid.occupy(nextRightHex, { 0, 0 });
+        // right edge
+        if (grid.isOccupied(nextRightHex)) {
+            int sigilIndex = grid.getEffigy(nextRightHex).index;
+            Sigil& sig = sigils.at(sigilIndex);
+            HexPoint fwdNextHex = grid.hexAdd(nextRightHex, hexDir);
+
+            while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+                fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
+            }
+
+            if (grid.isOccupied(fwdNextHex)) {
+                Effigy nextEff = grid.getEffigy(fwdNextHex);
+                if (nextEff.value == sig.getEffigy().value) {
+                    Sigil& nextSig = sigils.at(nextEff.index);
+                    nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                    sig.disable();
+                    grid.vacate(nextRightHex);
+                }
+            } else {
+                grid.vacate(nextRightHex);
+                grid.occupy(fwdNextHex, sig.getEffigy());
+                sig.setHex(fwdNextHex);
+                sig.setPosition(grid.hexPosition(fwdNextHex));
+            }
+        }
+
+        nextHex = grid.hexAdd(nextHex, oppositeHex);
+        // TraceLog(LOG_INFO, "NEXT NEXT HEX: %d %d %d", nextHex.q, nextHex.r, nextHex.s);
+        maxTries--;
+    }
+
+        // grid.occupy(nextHex, { 0, 0 });
+    // edge mid
+    if (grid.isOccupied(nextHex)) {
+        int sigilIndex = grid.getEffigy(nextHex).index;
+        Sigil& sig = sigils.at(sigilIndex);
+        HexPoint fwdNextHex = grid.hexAdd(nextHex, hexDir);
+
+        while(!grid.isOccupied(fwdNextHex) && !grid.isHexEdge(fwdNextHex)) {
+            fwdNextHex = grid.hexAdd(fwdNextHex, hexDir);
+        }
+
+        if (grid.isOccupied(fwdNextHex)) {
+            Effigy nextEff = grid.getEffigy(fwdNextHex);
+            if (nextEff.value == sig.getEffigy().value) {
+                Sigil& nextSig = sigils.at(nextEff.index);
+                nextSig.setEffigy({ nextEff.index, nextEff.value + sig.getEffigy().value });
+                sig.disable();
+                grid.vacate(nextHex);
+            }
+        } else {
+            grid.vacate(nextHex);
+            grid.occupy(fwdNextHex, sig.getEffigy());
+            sig.setHex(fwdNextHex);
+            sig.setPosition(grid.hexPosition(fwdNextHex));
+        }
+    }
+}
+
 void World::updateSigils(Direction dir) {
 
     // TraceLog(LOG_INFO, "======= BEGIN SIGIL UPDATE =======");
@@ -185,6 +391,22 @@ void World::updateSigils(Direction dir) {
 }
 
 void World::updateGame(Action::Surface action){
+    if (action == Action::Surface::HUD_UP || IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+        updateMove(HexDirection::NORTH);
+    } else if (action == Action::Surface::HUD_UP_RIGHT || IsKeyPressed(KEY_E) || IsKeyPressed(KEY_RIGHT)) {
+        updateMove(HexDirection::NORTH_EAST);
+    } else if (action == Action::Surface::HUD_DOWN_RIGHT || IsKeyPressed(KEY_D)) {
+        updateMove(HexDirection::SOUTH_EAST);
+    } else if (action == Action::Surface::HUD_DOWN || IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+        updateMove(HexDirection::SOUTH);
+    } else if (action == Action::Surface::HUD_DOWN_LEFT || IsKeyPressed(KEY_A)) {
+        updateMove(HexDirection::SOUTH_WEST);
+    } else if (action == Action::Surface::HUD_UP_LEFT || IsKeyPressed(KEY_Q) || IsKeyPressed(KEY_LEFT)) {
+        updateMove(HexDirection::NORTH_WEST);
+    }
+}
+
+void World::updateGame2(Action::Surface action){
     if (state == State::World::GRIDLOCK) return;
 
     grid.update();

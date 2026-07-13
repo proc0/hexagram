@@ -35,10 +35,10 @@ void Grid::render() const {
 }
 
 void Grid::renderHex(const HexState& hex) const {
-    DrawPoly(hex.position, 6, hexSize, 0.0f, bgColor);
+    DrawPoly(hex.position, 6, hexSize, 0.0f, hex.isOccupied ? YELLOW : bgColor);
     DrawPolyLines(hex.position, 6, hexSize, 0.0f, borderColor);
-    // const char* pointLabel = TextFormat("(%d, %d, %d)", hex.point.q, hex.point.r, hex.point.s);
-    // DrawText(pointLabel, hex.position.x-30.0f, hex.position.y-9.0f, 18, BLACK);
+    const char* pointLabel = TextFormat("(%d, %d, %d)", hex.point.q, hex.point.r, hex.point.s);
+    DrawText(pointLabel, hex.position.x-30.0f, hex.position.y-9.0f, 18, BLACK);
 }
 
 void Grid::update() {
@@ -175,6 +175,16 @@ HexPoint Grid::hexNeighbor(HexPoint hex, Direction dir) const {
     return neighbor;
 }
 
+HexPoint Grid::hexCorner(HexPoint unitHex) const {
+	HexPoint maxHex = { gridSize, gridSize, gridSize };
+    HexPoint corner = { unitHex.q*maxHex.q, unitHex.r*maxHex.r, unitHex.s*maxHex.s };
+    if (!isValid(corner)) {
+    	TraceLog(LOG_ERROR, "Did not use a unit hex for hexCorner");
+    }
+
+    return corner;
+}
+
 Vector2 Grid::hexPosition(int q, int r, int s) const {
     if (abs(q) > gridSize || abs(r) > gridSize || abs(s) > gridSize) {
     	return Vector2({ 0.0f, 0.0f });
@@ -189,6 +199,31 @@ Vector2 Grid::hexPosition(HexPoint p) const {
     }
 
     return map.at(p).position;
+}
+
+// heuristic algo for "rotating" a hex to get the adjacent hex
+// for unit cubic coordinates, i.e. north rotates to north west and north east
+HexPoint Grid::hexUnitRotate(HexPoint hex, bool clockwise) const {
+	if (clockwise) {
+		if (hex.q == 0) {
+			return { hex.s, hex.r, hex.q };
+		} else if (hex.r == 0) {
+			return { hex.r, hex.q, hex.s };
+		} else if (hex.s == 0) {
+			return { hex.q, hex.s, hex.r };
+		}
+	} else {
+		if (hex.q == 0) {
+			return { hex.r, hex.q, hex.s };
+		} else if (hex.r == 0) {
+			return { hex.q, hex.s, hex.r };
+		} else if (hex.s == 0) {
+			return { hex.s, hex.r, hex.q };
+		}		
+	}
+
+	TraceLog(LOG_ERROR, "Attempted to rotate non-unit vector.");
+	return hex;
 }
 
 HexPoint Grid::hexFindFirstEmpty() const {
@@ -256,6 +291,35 @@ HexPoint Grid::hexFindRandomEmpty() const {
 	return result;
 }
 
+
+// TODO: use gridSize (# of layers) instead of hardcoding number here
+// then subtract 1 on layers to walk through grid from a certain edge
+// towards the other edge
+// i.e. top to bottom: q is invariant, r subtracts 1, s adds 1
+// top right to bottom left: s is invariant, q subtracts 1, r adds 1
+// bottom right to top left: r is invariant, q subtracts 1, s adds 1
+// etc.
+// also find a way to label each corner programmatically
+// then for any given direction, start at the corner
+// gather the whole edge top layer, and apply above algorithm
+// to walk in the opposite direction of the player moved direction
+
+// this can be done by "columns" along the direction
+// start with one of the corners, walk back, move to next column
+// this algo, can be by column OR by row
+
+// use the by row to collect all the sigils that CAN move
+// use the column to move those sigils and drag the other ones
+// the do another pass for merging, tagging sigils that have already merged
+// NOTE: it can also be done in one pass
+// NOTE: get the hex direction by getting the neighbor of 0,0,0
+// then use that hex to add it to each hex in the row to walk in that direction
+// that is for columns
+// For rows, get the counter-clockwise adjacent neighbors of 0,0,0, and add those
+// respectively, depending on the corner that you start from
+
+// NOTE: find the pattern to programmatically rotate clockwise or counter-clockwise neighboring hexes
+
 bool Grid::isEdge(HexPoint hex, Direction dir) const {
 	bool result = false;
 
@@ -283,6 +347,10 @@ bool Grid::isEdge(HexPoint hex, Direction dir) const {
 	}
 
 	return result;
+}
+
+bool Grid::isHexEdge(HexPoint hex) const {
+	return abs(hex.q) == gridSize || abs(hex.r) == gridSize || abs(hex.s) == gridSize;
 }
 
 Effigy Grid::getEffigy(HexPoint hex) const {

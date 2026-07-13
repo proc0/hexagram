@@ -83,6 +83,8 @@ public:
     HexPoint hexNeighbor(HexPoint, Direction) const;
     Vector2 hexPosition(int q, int r, int s) const;
     Vector2 hexPosition(HexPoint) const;
+    HexPoint hexUnitRotate(HexPoint, bool clockwise) const;
+    HexPoint hexCorner(HexPoint unitHex) const;
 
     HexPoint hexFindFirstEmpty() const;
     HexPoint hexFindCenterEmpty() const;
@@ -95,6 +97,7 @@ public:
     void clear();
     bool isFull() const;
     bool isEdge(HexPoint, Direction) const;
+    bool isHexEdge(HexPoint) const;
     bool isOccupied(HexPoint) const;
     bool isValid(HexPoint) const;
     // void transition(State::Screen);
